@@ -3,6 +3,8 @@ use warnings;
 
 my $indent = $ENV{"kak_opt_filetree_indentation"};
 my $current_indent = length($ENV{"kak_opt_filetree__current_indent"});
+my $open = $ENV{"kak_opt_filetree_dir_icon_open"};
+my $close = $ENV{"kak_opt_filetree_dir_icon_close"};
 my $indent_str = "";
 
 $current_indent -= $indent;
@@ -15,8 +17,8 @@ chomp(@input = <>);
 
 my @dirs;
 foreach my $line (reverse @input) {
-    if ($line =~ /^$indent_str[-+] (.*)/) {
-        push(@dirs, $1);
+    if ($line =~ /^$indent_str(\Q$open\E|\Q$close\E) (.*)/) {
+        push(@dirs, $2);
         $current_indent -= $indent;
         $indent_str = "";
         for my $i (1 .. $current_indent) {

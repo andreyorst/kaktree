@@ -22,14 +22,18 @@ chomp(@input = <>);
 
 print "$current_indent$open_node $root\n";
 
-for my $i (0 .. $#input) {
-    if ($input[$i] =~ /(.*)\/$/) {
-        print "$current_indent$indent_str$closed_node $1\n";
-    } else {
-        push(@files, $input[$i]);
+if ($#input > 0) {
+    for my $i (0 .. $#input) {
+        if ($input[$i] =~ /(.*)\/$/) {
+            print "$current_indent$indent_str$closed_node $1\n";
+        } else {
+            push(@files, $input[$i]);
+        }
     }
-}
 
-foreach my $file (@files) {
-    print "$current_indent$indent_str$file_node $file\n"
+    foreach my $file (@files) {
+        print "$current_indent$indent_str$file_node $file\n"
+    }
+} else {
+        print "$current_indent$indent_str<empty>\n"
 }
