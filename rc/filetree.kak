@@ -7,6 +7,8 @@
 # │ GitHub.com/andreyorst/filetree.kak │
 # ╰────────────────────────────────────╯
 
+declare-option -hidden str filetree__source %sh{printf "%s" "${kak_source%/rc/*}"}
+
 define-command -docstring "filetree-enable: Create filetree window if not exist and enable related hooks." \
 filetree-enable %{
     require-module filetree
@@ -50,6 +52,7 @@ declare-option -hidden str filetree__jumpclient
 declare-option -hidden str filetree__last_client ''
 declare-option -hidden str filetree__active 'false'
 declare-option -hidden str filetree__onscreen 'false'
+declare-option -hidden str filetree__current_indent ''
 
 # add-highlighter shared/filetree group
 # add-highlighter shared/filetree/category regex ^[^\s][^\n]+$ 0:keyword
@@ -127,77 +130,135 @@ define-command -hidden filetree-update -params ..1 %{ evaluate-commands %sh{
 
     tmp=$(mktemp -d "${TMPDIR:-/tmp}/kakoune-filetree.XXXXXXXX")
     tree="${tmp}/tree"
-    filetree_buffer="${tmp}/buffer"
     fifo="${tmp}/fifo"
     mkfifo ${fifo}
 
     printf "%s\n" "hook global -always KakEnd .* %{ nop %sh{ rm -rf ${tmp} }}"
 
-    ls -1 --sort type > ${filetree_buffer}
+    basename() {
+        filename=$1
+        case "$filename" in
+          */*[!/]*)
+            trail=${filename##*[!/]}
+            filename=${filename%%"$trail"}
+            base=${filename##*/} ;;
+          *[!/]*)
+            trail=${filename##*[!/]}
+            base=${filename%%"$trail"} ;;
+          *) base="/" ;;
+        esac
+        printf "%s\n" "${base}"
+    }
+
+    # $kak_opt_filetree_dir_icon_open
+    # $kak_opt_filetree_dir_icon_close
+    # $kak_opt_filetree_file_icon
+    # $kak_opt_filetree_indentation
+    # $kak_opt_filetree__current_indent
+    export filetree_root=$(basename $(pwd))
+
+    command ls -1p $(pwd) | perl $kak_opt_filetree__source/perl/filetree.pl > ${tree}
 
     printf "%s\n" "evaluate-commands -client %opt{filetreeclient} %{ try %{
                        edit! -debug -fifo ${fifo} *filetree*
                        hook global BufCloseFifo .* %{ evaluate-commands -buffer *filetree* %{ set-option buffer readonly true }}
                        set-option buffer filetype filetree
-                       map buffer normal '<ret>' ': filetree-action %{${kak_bufname}}<ret>'
+                       map buffer normal '<ret>' ': filetree-ret-action<ret>'
+                       map buffer normal '<tab>' ': filetree-tab-action<ret>'
                        try %{ set-option window tabstop 1 }
                        try %{ focus ${kak_client} }
                    }}"
 
-    ( cat ${filetree_buffer} > ${fifo}; rm -rf ${tmp} ) > /dev/null 2>&1 < /dev/null &
+    ( cat ${tree} > ${fifo}; rm -rf ${tmp} ) > /dev/null 2>&1 < /dev/null &
 }}
 
-define-command -hidden filetree-action -params 1 %{
-    execute-keys '<a-h>;/: <c-v><c-i><ret><a-h>2<s-l><a-l><a-;>'
-    evaluate-commands -client %opt{filetree__jumpclient} %sh{
-        printf "%s: \t%s\n" "${kak_selection}" "$1" | awk -F ': \t' '{
-                keys = $2; gsub(/</, "<lt>", keys); gsub(/\t/, "<c-v><c-i>", keys);
-                gsub("&", "&&", keys); gsub("#", "##", keys);
-                select = $1; gsub(/</, "<lt>", select); gsub(/\t/, "<c-v><c-i>", select);
-                gsub("&", "&&", select); gsub("#", "##", select);
-                bufname = $3; gsub("&", "&&", bufname); gsub("#", "##", bufname);
-                print "try %# buffer %&" bufname "&; execute-keys %&<esc>/\\Q" keys "<ret>vc& # catch %# echo -markup %&{Error}unable to find tag& #; try %# execute-keys %&s\\Q" select "<ret>& #"
-            }'
+define-command -hidden filetree-ret-action %{ evaluate-commands -save-regs 'a' %{
+    try %{
+        set-register a %opt{filetree_dir_icon_close}
+        execute-keys -draft '<a-x>s\Q<c-r>a<ret>'
+        filetree-change-root
+    } catch %{
+        set-register a %opt{filetree_dir_icon_open}
+        execute-keys -draft '<a-x>s\Q<c-r>a<ret>'
+        filetree-change-root
+    } catch %{
+        set-register a %opt{filetree_file_icon}
+        execute-keys -draft '<a-x>s\Q<c-r>a<ret>'
+        filetree-file-open
+    } catch %{
+        nop
     }
-    try %{ focus %opt{filetree__jumpclient} }
+}}
+
+define-command -hidden filetree-tab-action %{ evaluate-commands -save-regs 'a' %{
+    try %{
+        set-register a %opt{filetree_dir_icon_close}
+        execute-keys -draft '<a-x>s\Q<c-r>a<ret>'
+        filetree-dir-unfold
+    } catch %{
+        set-register a %opt{filetree_dir_icon_open}
+        execute-keys -draft '<a-x>s\Q<c-r>a<ret>'
+        filetree-dir-fold
+    } catch %{
+        nop
+    }
+}}
+
+define-command -docstring "filetree-dir-unfold: unfold current directory." \
+filetree-dir-unfold %{ evaluate-commands -save-regs 'abc"' %{
+    # store currently expanded directory name into register 'a' 
+    execute-keys -draft '<a-h><a-l>S\h*[+-]\h+<ret><space>"ay'
+
+    # store current amount of indentation to the register 'b'
+    try %{
+        execute-keys -draft '<a-x>s^\h+<ret>"by'
+        set-option global filetree__current_indent %reg{b}
+    } catch %{
+        set-option global filetree__current_indent ''
+    }
+
+    # store entire tree into register 'c' to build up path to currently expanded dir.
+    execute-keys -draft '<a-x><a-h>Gk"cy'
+
+    # build subtree
+    evaluate-commands %sh{
+        # Perl will need these variables:
+        # $kak_opt_filetree_dir_icon_open
+        # $kak_opt_filetree_dir_icon_close
+        # $kak_opt_filetree_file_icon
+        # $kak_opt_filetree_indentation
+        # $kak_opt_filetree__current_indent
+
+        tmp=$(mktemp -d "${TMPDIR:-/tmp}/kakoune-filetree.XXXXXXXX")
+        tree="${tmp}/tree"
+
+        dir=$(printf "%s\n" "$kak_reg_a" | sed "s/^'\|'$//g")
+        export filetree_root=$(basename "$dir")
+        [ "$dir" = "$(basename $(pwd))" ] && dir="."
+
+        # build full path based on indentation to the currently expanded directory.
+        current_path=$(printf "%s\n" "$kak_reg_c" | perl $kak_opt_filetree__source/perl/path_maker.pl)
+
+        command ls -1p "./$current_path/$dir" | perl $kak_opt_filetree__source/perl/filetree.pl > $tree
+        contents=$(cat $tree)
+        printf "%s\n" "set-register '\"' %{$contents}"
+    }
+    execute-keys '<a-x>Ra<ret><esc><a-;><space>;'
+}}
+
+define-command -docstring "filetree-dir-fold: fold current directory." \
+filetree-dir-fold %{
+    execute-keys -draft 'j<a-i>idkI<space><esc><a-h>f-;r+i<backspace>'
 }
 
+define-command -docstring "filetree-file-open: open current file in %opt{filetree__jumpclient}." \
+filetree-file-open %{}
 
-try %{
-    hook global ClientClose .* %{ evaluate-commands -client %opt{filetreeclient} %sh{
-        eval "set -- ${kak_client_list}"
-        if [ $# -eq 1 ] && [ "$1" = "${kak_opt_filetreeclient}" ]; then
-            printf "%s\n" "filetree-disable"
-        fi
-    }}
-} catch %{
-    echo -debug "filetree.kak failed to declare 'ClientClose' hooks, consider using 'filetree-quit' to quit Kakoune properly"
-
-    define-command -docstring \
-    "filetree-quit [<exclamation mark>] [<exit status>]: quit current client, and the kakoune session, and close filetree only if two clients left, one of which is `%opt{filetreeclient}'.
-    If `!' is specified as a first argument `quit!' is called. An optional integer parameter can set the client exit status" \
-    filetree-quit -params .. %{ evaluate-commands %sh{
-        ( eval "set -- ${kak_client_list}"
-        if [ $# -eq 2 ] && [ $(expr "${kak_client_list}" : ".*${kak_opt_filetreeclient}.*") -ne 0 ]; then
-            printf "%s\n" "filetree-disable"
-        fi )
-        if [ "$1" = '!' ]; then exclamation='!'; shift; fi
-        printf "%s\n" "quit${exclamation} $@"
-    }}
-
-    define-command -docstring \
-    "filetree-write-quit [<exclamation mark>] [-sync] [<exit status>]: write current buffer and quit current client, and close filetree only if two clients left, one of which is `%opt{filetreeclient}'.
-    If `!' is specified as a first argument `write-quit!' is called. An optional integer parameter can set the client exit status.
-    Switches:
-        -sync  force the synchronization of the file onto the filesystem  " \
-    filetree-write-quit -params .. %{ evaluate-commands %sh{
-        ( eval "set -- ${kak_client_list}"
-        if [ $# -eq 2 ] && [ $(expr "${kak_client_list}" : ".*${kak_opt_filetreeclient}.*") -ne 0 ]; then
-            printf "%s\n" "filetree-disable"
-        fi )
-        if [ "$1" = '!' ]; then exclamation='!'; shift; fi
-        printf "%s\n" "write-quit${exclamation} $@"
-    }}
-}
+hook global ClientClose .* %{ evaluate-commands -client %opt{filetreeclient} %sh{
+    eval "set -- ${kak_client_list}"
+    if [ $# -eq 1 ] && [ "$1" = "${kak_opt_filetreeclient}" ]; then
+        printf "%s\n" "filetree-disable"
+    fi
+}}
 
 §
