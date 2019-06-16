@@ -1,12 +1,12 @@
 use strict;
 use warnings;
 
-my $root = $ENV{"filetree_root"};
-my $open_node = $ENV{"kak_opt_filetree_dir_icon_open"};
-my $closed_node = $ENV{"kak_opt_filetree_dir_icon_close"};
-my $file_node = $ENV{"kak_opt_filetree_file_icon"};
-my $indent = $ENV{"kak_opt_filetree_indentation"};
-my $current_indent = $ENV{"kak_opt_filetree__current_indent"};
+my $root = $ENV{"kaktree_root"};
+my $open_node = $ENV{"kak_opt_kaktree_dir_icon_open"};
+my $closed_node = $ENV{"kak_opt_kaktree_dir_icon_close"};
+my $file_node = $ENV{"kak_opt_kaktree_file_icon"};
+my $indent = $ENV{"kak_opt_kaktree_indentation"};
+my $current_indent = $ENV{"kak_opt_kaktree__current_indent"};
 my $indent_str;
 
 for my $i (1 .. $indent) {

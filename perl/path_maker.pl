@@ -1,10 +1,10 @@
 use strict;
 use warnings;
 
-my $indent = $ENV{"kak_opt_filetree_indentation"};
-my $current_indent = length($ENV{"kak_opt_filetree__current_indent"});
-my $open = $ENV{"kak_opt_filetree_dir_icon_open"};
-my $close = $ENV{"kak_opt_filetree_dir_icon_close"};
+my $indent = $ENV{"kak_opt_kaktree_indentation"};
+my $current_indent = length($ENV{"kak_opt_kaktree__current_indent"});
+my $open = $ENV{"kak_opt_kaktree_dir_icon_open"};
+my $close = $ENV{"kak_opt_kaktree_dir_icon_close"};
 my $indent_str = "";
 
 $current_indent -= $indent;
