@@ -13,27 +13,30 @@ for my $i (1 .. $indent) {
     $indent_str .= " ";
 }
 
-my @input;
-my @files;
-
-chomp(@input = <>);
-
-@input = sort @input;
+chomp(my @input = <>);
+my $input_size = scalar @input;
 
 print "$current_indent$open_node $root\n";
 
-if ($#input > 0) {
-    for my $i (0 .. $#input) {
-        if ($input[$i] =~ /(.*)\/$/) {
+if ($input_size > 0) {
+    build_tree(@input);
+} else {
+    print "$current_indent$indent_str<empty>\n"
+}
+
+sub build_tree {
+    my @items = sort @_;
+    my @files;
+
+    foreach my $item (@items) {
+        if ($item =~ /(.*)\/$/) {
             print "$current_indent$indent_str$closed_node $1\n";
         } else {
-            push(@files, $input[$i]);
+            push(@files, $item);
         }
     }
 
     foreach my $file (@files) {
         print "$current_indent$indent_str$file_node $file\n"
     }
-} else {
-        print "$current_indent$indent_str<empty>\n"
 }
