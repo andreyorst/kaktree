@@ -7,6 +7,7 @@ my $closed_node = $ENV{"kak_opt_kaktree_dir_icon_close"};
 my $file_node = $ENV{"kak_opt_kaktree_file_icon"};
 my $indent = $ENV{"kak_opt_kaktree_indentation"};
 my $current_indent = $ENV{"kak_opt_kaktree__current_indent"};
+my $hidden = $ENV{"kak_opt_kaktree_show_hidden"};
 my $indent_str;
 
 for my $i (1 .. $indent) {
@@ -14,6 +15,13 @@ for my $i (1 .. $indent) {
 }
 
 chomp(my @input = <>);
+
+if ($hidden == "true") {
+    # remove `./' and `../' from tree
+    @input = grep {$_ ne "../"} @input;
+    @input = grep {$_ ne "./"} @input;
+}
+
 my $input_size = scalar @input;
 
 print "$current_indent$open_node $root\n";
@@ -29,9 +37,7 @@ sub build_tree {
     my @files;
 
     foreach my $item (@items) {
-        if ($item =~ /[.]{1,2}\/$/) {
-            next;
-        } elsif ($item =~ /(.*)\/$/) {
+        if ($item =~ /(.*)\/$/) {
             print "$current_indent$indent_str$closed_node $1\n";
         } else {
             push(@files, $item);

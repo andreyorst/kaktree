@@ -155,6 +155,7 @@ define-command -hidden kaktree-update %{ evaluate-commands %sh{
     # $kak_opt_kaktree_file_icon
     # $kak_opt_kaktree_indentation
     # $kak_opt_kaktree__current_indent
+    # $kak_opt_kaktree_show_hidden
     export kaktree_root="$(basename $(pwd))"
     [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="-a"
     command ls -1p $hidden $(pwd) | perl $kak_opt_kaktree__source/perl/kaktree.pl > ${tree}
@@ -227,6 +228,7 @@ define-command -hidden kaktree-dir-unfold %{ evaluate-commands -save-regs 'abc"'
         # $kak_opt_kaktree_file_icon
         # $kak_opt_kaktree_indentation
         # $kak_opt_kaktree__current_indent
+        # $kak_opt_kaktree_show_hidden
 
         basename() {
             filename="$1"
@@ -332,6 +334,7 @@ define-command -hidden kaktree-change-root -params ..1 %{ evaluate-commands -sav
         # $kak_opt_kaktree_file_icon
         # $kak_opt_kaktree_indentation
         # $kak_opt_kaktree__current_indent
+        # $kak_opt_kaktree_show_hidden
 
         basename() {
             filename="$1"
