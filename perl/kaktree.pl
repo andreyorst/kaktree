@@ -16,7 +16,7 @@ for my $i (1 .. $indent) {
 
 chomp(my @input = <>);
 
-if ($hidden == "true") {
+if ($hidden eq "true") {
     # remove `./' and `../' from tree
     @input = grep {$_ ne "../"} @input;
     @input = grep {$_ ne "./"} @input;
