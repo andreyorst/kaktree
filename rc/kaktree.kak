@@ -335,7 +335,7 @@ define-command kaktree-change-root -params ..1 %{ evaluate-commands -save-regs '
         }
 
         current_path=$(printf "%s\n" "$kak_reg_b" | perl $kak_opt_kaktree__source/perl/path_maker.pl)
-        echo "echo -debug %{vaiv: $current_path}"
+
         dir=$(printf "%s\n" "$kak_reg_a" | sed "s/^'\|'$//g;s/#/##/g")
 
         if [ "$(basename $dir)" = "$(basename $(pwd))" ] || [ "$1" = "up" ]; then
