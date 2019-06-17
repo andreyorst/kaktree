@@ -47,7 +47,7 @@ str kaktree_file_icon '#'
 declare-option -docstring "Show hidden files." \
 bool kaktree_show_hidden true
 
-declare-option -docstring "Amount of indentation for nested items." \
+declare-option -docstring "Amount of indentation for nested items. Must be greater than zero." \
 int kaktree_indentation 2
 
 # Helper options
