@@ -207,7 +207,7 @@ define-command -hidden kaktree-tab-action %{ evaluate-commands -save-regs 'a' %{
 
 define-command -hidden kaktree-dir-unfold %{ evaluate-commands -save-regs 'abc"' %{
     # store currently expanded directory name into register 'a'
-    execute-keys -draft '<a-h><a-l>S\h*.\h+<ret><space>"ay'
+    execute-keys -draft '<a-h><a-l>"ay'
 
     # store current amount of indentation to the register 'b'
     try %{
@@ -245,7 +245,8 @@ define-command -hidden kaktree-dir-unfold %{ evaluate-commands -save-regs 'abc"'
             printf "%s\n" "${base}"
         }
 
-        dir=$(printf "%s\n" "$kak_reg_a" | sed "s/^'\|'$//g")
+        dir=$(printf "%s\n" "$kak_reg_a" | sed "s/^'\|'$//g;")
+        dir=$(printf "%s\n" "$dir" | perl -pe "s/\s*(\Q$kak_opt_kaktree_dir_icon_open\E|\Q$kak_opt_kaktree_dir_icon_close\E) (.*)$/\$2/g;")
         export kaktree_root="$(basename "$dir")"
         [ "$dir" = "$(basename $(pwd))" ] && dir="."
 
@@ -264,9 +265,8 @@ define-command -hidden kaktree-dir-fold %{ evaluate-commands %sh{
 }}
 
 define-command -hidden kaktree-file-open %{ evaluate-commands -save-regs 'abc"' %{
-    # store currently opened file name into register 'a'
-    set-register a %opt{kaktree_file_icon}
-    execute-keys -draft '<a-h><a-l>S\h*\Q<c-r>a<space><ret><space>"ay'
+    # store currently expanded directory name into register 'a'
+    execute-keys -draft '<a-h><a-l>"ay'
 
     # store current amount of indentation to the register 'b'
     try %{
@@ -302,12 +302,13 @@ define-command -hidden kaktree-file-open %{ evaluate-commands -save-regs 'abc"' 
             printf "%s\n" "${base}"
         }
 
-        file=$(printf "%s\n" "$kak_reg_a" | sed "s/^'\|'$//g;s/#/##/g")
+        file=$(printf "%s\n" "$kak_reg_a" | sed "s/^'\|'$//g")
+        file=$(printf "%s\n" "$file" | perl -pe "s/\s*(\Q$kak_opt_kaktree_file_icon\E) (.*)$/\$2/g;")
 
         # build full path based on indentation to the currently expanded directory.
         current_path=$(printf "%s\n" "$kak_reg_c" | perl $kak_opt_kaktree__source/perl/path_maker.pl)
-        current_path=$(printf "%s\n" "$(pwd)/$current_path" | sed "s/#/##/g")
-        printf "%s\n" "edit %#$current_path/$file#"
+        file_path=$(printf "%s\n" "$(pwd)/$current_path/$file" | sed "s/#/##/g")
+        printf "%s\n" "edit %#$file_path#"
         printf "%s\n" "focus %opt{kaktree__jumpclient}"
     }
 }}
