@@ -50,6 +50,14 @@ bool kaktree_show_hidden true
 declare-option -docstring "Amount of indentation for nested items. Must be greater than zero." \
 int kaktree_indentation 2
 
+declare-option -docstring "command to provide list of files. Strongly recommended to use analogs of -1 and -d if changed to another program.
+Default value:
+    ls -1p" \
+str kaktree_ls_command "ls -1p"
+
+declare-option -hidden -docstring "Argument to pass to `kaktree_ls_command', to provide hidden files." \
+str kaktree_hidden_arg "-a"
+
 # Helper options
 declare-option -hidden str kaktree__jumpclient
 declare-option -hidden str kaktree__active 'false'
@@ -157,8 +165,8 @@ define-command -hidden kaktree-update %{ evaluate-commands %sh{
     # $kak_opt_kaktree__current_indent
     # $kak_opt_kaktree_show_hidden
     export kaktree_root="$(basename $(pwd))"
-    [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="-a"
-    command ls -1p $hidden $(pwd) | perl $kak_opt_kaktree__source/perl/kaktree.pl > ${tree}
+    [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="$kak_opt_kaktree_hidden_arg"
+    command $kak_opt_kaktree_ls_command $hidden $(pwd) | perl $kak_opt_kaktree__source/perl/kaktree.pl > ${tree}
 
     printf "%s\n" "evaluate-commands -client %opt{kaktreeclient} %{ try %{
                        edit! -debug -fifo ${fifo} *kaktree*
@@ -253,15 +261,15 @@ define-command -hidden kaktree-dir-unfold %{ evaluate-commands -save-regs 'abc"'
         # build full path based on indentation to the currently expanded directory.
         current_path=$(printf "%s\n" "$kak_reg_c" | perl $kak_opt_kaktree__source/perl/path_maker.pl)
 
-        [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="-a"
-        tree=$(command ls -1p $hidden "./$current_path/$dir" | perl $kak_opt_kaktree__source/perl/kaktree.pl)
+        [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="$kak_opt_kaktree_hidden_arg"
+        tree=$(command $kak_opt_kaktree_ls_command $hidden "./$current_path/$dir" | perl $kak_opt_kaktree__source/perl/kaktree.pl)
         printf "%s\n" "set-register '\"' %{$tree}"
     }
     execute-keys '<a-x>Ra<ret><esc><a-;><space>;'
 }}
 
-define-command -hidden kaktree-dir-fold %{ evaluate-commands %sh{
-    printf "%s\n" "execute-keys -draft 'j<a-i>idkI<space><esc><a-h>;/\Q<space>${kak_opt_kaktree_dir_icon_open}\E<ret>c${kak_opt_kaktree_dir_icon_close}<esc>'"
+define-command -hidden kaktree-dir-fold %{ evaluate-commands -save-regs '"/' %sh{
+    printf "%s\n" "execute-keys 'j<a-i>idkI<space><esc><a-h>;/\Q<space>${kak_opt_kaktree_dir_icon_open}\E<ret>c${kak_opt_kaktree_dir_icon_close}<esc>gh'"
 }}
 
 define-command -hidden kaktree-file-open %{ evaluate-commands -save-regs 'abc"' %{
@@ -369,8 +377,8 @@ define-command -hidden kaktree-change-root -params ..1 %{ evaluate-commands -sav
         escaped_path=$(printf "%s\n" "$current_path" | sed "s/#/##/g")
         printf "%s\n" "change-directory %#$escaped_path#"
         kak_opt_kaktree__current_indent=""
-        [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="-a"
-        tree=$(command ls -1p $hidden "$current_path" | perl $kak_opt_kaktree__source/perl/kaktree.pl | sed "s/#/##/g")
+        [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="$kak_opt_kaktree_hidden_arg"
+        tree=$(command $kak_opt_kaktree_ls_command $hidden "$current_path" | perl $kak_opt_kaktree__source/perl/kaktree.pl | sed "s/#/##/g")
         printf "%s\n" "set-register '\"' %#$tree#; execute-keys '%Rgg'"
     }
 }}

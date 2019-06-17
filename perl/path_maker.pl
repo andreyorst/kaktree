@@ -12,8 +12,7 @@ for my $i (1 .. $current_indent) {
     $indent_str .= " ";
 }
 
-my @input;
-chomp(@input = <>);
+chomp(my @input = <>);
 
 my @dirs;
 foreach my $line (reverse @input) {
