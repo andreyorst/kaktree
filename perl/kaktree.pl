@@ -29,7 +29,9 @@ sub build_tree {
     my @files;
 
     foreach my $item (@items) {
-        if ($item =~ /(.*)\/$/) {
+        if ($item =~ /[.]{1,2}\/$/) {
+            next;
+        } elsif ($item =~ /(.*)\/$/) {
             print "$current_indent$indent_str$closed_node $1\n";
         } else {
             push(@files, $item);
