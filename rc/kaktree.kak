@@ -47,6 +47,9 @@ str kaktree_file_icon '#'
 declare-option -docstring "Show hidden files." \
 bool kaktree_show_hidden true
 
+declare-option -docstring "Highlight current line in kaktree buffer." \
+bool kaktree_hlline true
+
 declare-option -docstring "Amount of indentation for nested items. Must be greater than zero." \
 int kaktree_indentation 2
 
@@ -82,6 +85,18 @@ define-command -hidden kaktree-hlline-update %{
     try %{ remove-highlighter buffer/hlline }
     try %{ add-highlighter buffer/hlline line %val{cursor_line} kaktree_hlline_face }
 }
+
+define-command -hidden kaktree-hlline-toggle %{ evaluate-commands -buffer *kaktree* %sh{
+    if [ "$kak_opt_kaktree_hlline" = "true" ]; then
+        printf "%s\n" "hook -group kaktree-hlline buffer RawKey '[jk]|<up>|<down>' kaktree-hlline-update
+                       hook -group kaktree-hlline buffer NormalIdle .* kaktree-hlline-update"
+    else
+        printf "%s\n" "remove-hooks buffer kaktree-hlline
+                       remove-highlighter buffer/hlline"
+    fi
+}}
+
+hook global WinSetOption kaktree_hlline=.+ kaktree-hlline-toggle
 
 define-command -hidden kaktree-enable-impl %{
     evaluate-commands %sh{
@@ -127,8 +142,6 @@ define-command -hidden kaktree-display %{ nop %sh{
                  } catch %{
                      edit! -debug -scratch *kaktree*
                      set-option buffer filetype kaktree
-                     hook buffer RawKey '[jk]|<up>|<down>' kaktree-hlline-update
-                     hook buffer NormalIdle .* kaktree-hlline-update
                      rename-client %opt{kaktreeclient}
                      kaktree-update
                  }
