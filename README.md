@@ -1,6 +1,6 @@
 # kaktree
 
-![kaktree](https://user-images.githubusercontent.com/19470159/59665047-d54c4200-91ba-11e9-99bb-c48e55404972.png)
+![kaktree](https://user-images.githubusercontent.com/19470159/59667890-2d397780-91c0-11e9-9214-e32b04539e7a.png)
 
 This plugin displays the interactive filetree. It requires Tmux and Perl, as
 well as `ls` command.
