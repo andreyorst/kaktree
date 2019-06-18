@@ -65,6 +65,7 @@ declare-option -hidden str kaktree__onscreen 'false'
 declare-option -hidden str kaktree__current_indent ''
 
 set-face global kaktree_icon_face default,default+b@comment
+set-face global kaktree_hlline_face default,default+@SecondarySelection
 
 add-highlighter shared/kaktree group
 add-highlighter shared/kaktree/icon regex ^\h*(.) 1:kaktree_icon_face
@@ -77,13 +78,18 @@ hook -group kaktree-syntax global WinSetOption filetype=kaktree %{
     }
 }
 
+define-command -hidden kaktree-hlline-update %{
+    try %{ remove-highlighter buffer/hlline }
+    try %{ add-highlighter buffer/hlline line %val{cursor_line} kaktree_hlline_face }
+}
+
 define-command -hidden kaktree-enable-impl %{
     evaluate-commands %sh{
         [ "${kak_opt_kaktree__active}" = "true" ] && exit
         printf "%s\n" "set-option global kaktree__jumpclient '${kak_client:-client0}'
                        set-option global kaktree__active true
-                       hook -group kaktree-watchers global FocusOut (?!${kak_opt_kaktreeclient}).* %{
-                           set-option global kaktree__jumpclient %{$kak_client}
+                       hook -group kaktree-watchers global FocusIn (?!${kak_opt_kaktreeclient}).* %{
+                           set-option global kaktree__jumpclient %{${kak_client:-client0}}
                        }
                        kaktree-display
                        set-option global kaktree__onscreen true"
@@ -117,9 +123,12 @@ define-command -hidden kaktree-display %{ nop %sh{
 
     kaktree_cmd="try %{
                      buffer *kaktree*
+                     rename-client %opt{kaktreeclient}
                  } catch %{
                      edit! -debug -scratch *kaktree*
                      set-option buffer filetype kaktree
+                     hook buffer RawKey '[jk]|<up>|<down>' kaktree-hlline-update
+                     hook buffer NormalIdle .* kaktree-hlline-update
                      rename-client %opt{kaktreeclient}
                      kaktree-update
                  }
@@ -194,8 +203,6 @@ define-command -hidden kaktree-ret-action %{ evaluate-commands -save-regs 'a' %{
         set-register a %opt{kaktree_file_icon}
         execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
         kaktree-file-open
-    } catch %{
-        nop
     }
 }}
 
@@ -273,7 +280,7 @@ define-command -hidden kaktree-dir-fold %{ evaluate-commands -save-regs '"/' %sh
 }}
 
 define-command -hidden kaktree-file-open %{ evaluate-commands -save-regs 'abc"' %{
-    # store currently expanded directory name into register 'a'
+    # store current file name into register 'a'
     execute-keys -draft '<a-h><a-l>"ay'
 
     # store current amount of indentation to the register 'b'
@@ -284,7 +291,7 @@ define-command -hidden kaktree-file-open %{ evaluate-commands -save-regs 'abc"' 
         set-option global kaktree__current_indent ''
     }
 
-    # store entire tree into register 'c' to build up path to currently expanded dir.
+    # store entire tree into register 'c' to build up path to current file
     execute-keys -draft '<a-x><a-h>Gk"cy'
 
     evaluate-commands -client %opt{kaktree__jumpclient} %sh{
@@ -316,7 +323,7 @@ define-command -hidden kaktree-file-open %{ evaluate-commands -save-regs 'abc"' 
         # build full path based on indentation to the currently expanded directory.
         current_path=$(printf "%s\n" "$kak_reg_c" | perl $kak_opt_kaktree__source/perl/path_maker.pl)
         file_path=$(printf "%s\n" "$(pwd)/$current_path/$file" | sed "s/#/##/g")
-        printf "%s\n" "edit %#$file_path#"
+        printf "%s\n" "edit -existing %#$file_path#"
         printf "%s\n" "focus %opt{kaktree__jumpclient}"
     }
 }}
@@ -389,5 +396,16 @@ hook global ClientClose .* %{ evaluate-commands -client %opt{kaktreeclient} %sh{
         printf "%s\n" "kaktree-disable"
     fi
 }}
+
+§
+
+hook global ModuleLoad powerline %§
+
+# format modeline in filetree window
+# requires `powerline.kak' plugin: https://github.com/andreyorst/powerline.kak
+hook -group kaktree-powerline global WinSetOption filetype=kaktree %{
+    declare-option str powerline_format
+    set-option window powerline_format ""
+}
 
 §
