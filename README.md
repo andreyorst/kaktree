@@ -1,15 +1,27 @@
 # kaktree
 
-![kaktree](https://user-images.githubusercontent.com/19470159/59591851-770a5b00-90f7-11e9-8a22-52fae3211829.png)
+![kaktree](https://user-images.githubusercontent.com/19470159/59665047-d54c4200-91ba-11e9-99bb-c48e55404972.png)
 
-This plugin displays the interactive filetree. It requires Tmux and Perl, as well as `ls` command.
+This plugin displays the interactive filetree. It requires Tmux and Perl, as
+well as `ls` command.
 
 ## Installation
+You need latest Kakoune build from master in order to use
+this plugin. __*still waiting for new stable release with module system...*__
+
 ## With [plug.kak](https://github.com/andreyorst/plug.kak)
 Add this to your `kakrc`:
 
 ```sh
-plug "andreyorst/kaktree" config %{
+plug "andreyorst/kaktree" defer kaktree %{
+    # settings for fancy icons as on the screenshot above.
+    set-option global kaktree_dir_icon_open  '▾ 🗁 ' # 📂 📁
+    set-option global kaktree_dir_icon_close '▸ 🗀 '
+    set-option global kaktree_file_icon      '⠀⠀🖹 ' # 🖺 🖻
+                                            # ^^ these are not spaces. It is invisible characters.
+                                            # This needed to make folding work correctly if you do
+                                            # space alignment of icons.
+} config %{
     map global user 'f' ": kaktree-toggle<ret>" -docstring "toggle filetree panel"
     hook global WinSetOption filetype=kaktree %{
         remove-highlighter buffer/numbers
