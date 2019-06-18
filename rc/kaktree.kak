@@ -209,6 +209,7 @@ define-command -hidden kaktree-refresh %{ evaluate-commands %sh{
                        map buffer normal '<tab>' ': kaktree-tab-action<ret>'
                        map buffer normal 'u' ': kaktree-change-root up<ret>'
                        map buffer normal 'H' ': kaktree-hidden-toggle<ret>'
+                       map buffer normal 'r' ': kaktree-refresh<ret>'
                        try %{ set-option window tabstop 1 }
                        try %{ focus ${kak_client} }
                    }}"
