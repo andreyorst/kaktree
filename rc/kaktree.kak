@@ -86,6 +86,7 @@ define-command -hidden kaktree-hlline-update %{
     try %{ add-highlighter buffer/hlline line %val{cursor_line} kaktree_hlline_face }
 }
 
+
 define-command -hidden kaktree-hlline-toggle %{ evaluate-commands -buffer *kaktree* %sh{
     if [ "$kak_opt_kaktree_hlline" = "true" ]; then
         printf "%s\n" "hook -group kaktree-hlline buffer RawKey '[jk]|<up>|<down>' kaktree-hlline-update
@@ -97,6 +98,16 @@ define-command -hidden kaktree-hlline-toggle %{ evaluate-commands -buffer *kaktr
 }}
 
 hook global WinSetOption kaktree_hlline=.+ kaktree-hlline-toggle
+
+define-command -hidden kaktree-hidden-toggle %{ evaluate-commands %sh{
+    if [ "$kak_opt_kaktree_show_hidden" = "true" ]; then
+        printf "%s\n" "set-option global kaktree_show_hidden false"
+    else
+        printf "%s\n" "set-option global kaktree_show_hidden true"
+    fi
+}}
+
+hook global GlobalSetOption kaktree_show_hidden=.+ kaktree-refresh
 
 define-command -hidden kaktree-enable-impl %{
     evaluate-commands %sh{
@@ -143,7 +154,7 @@ define-command -hidden kaktree-display %{ nop %sh{
                      edit! -debug -scratch *kaktree*
                      set-option buffer filetype kaktree
                      rename-client %opt{kaktreeclient}
-                     kaktree-update
+                     kaktree-refresh
                  }
                  focus ${kak_client:-client0}"
 
@@ -157,7 +168,7 @@ define-command -hidden kaktree-display %{ nop %sh{
     fi
 }}
 
-define-command -hidden kaktree-update %{ evaluate-commands %sh{
+define-command -hidden kaktree-refresh %{ evaluate-commands %sh{
     tmp=$(mktemp -d "${TMPDIR:-/tmp}/kakoune-kaktree.XXXXXXXX")
     tree="${tmp}/tree"
     fifo="${tmp}/fifo"
@@ -186,6 +197,7 @@ define-command -hidden kaktree-update %{ evaluate-commands %sh{
     # $kak_opt_kaktree_indentation
     # $kak_opt_kaktree__current_indent
     # $kak_opt_kaktree_show_hidden
+    kak_opt_kaktree__current_indent=""
     export kaktree_root="$(basename $(pwd))"
     [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="$kak_opt_kaktree_hidden_arg"
     command $kak_opt_kaktree_ls_command $hidden $(pwd) | perl $kak_opt_kaktree__source/perl/kaktree.pl > ${tree}
@@ -196,6 +208,7 @@ define-command -hidden kaktree-update %{ evaluate-commands %sh{
                        map buffer normal '<ret>' ': kaktree-ret-action<ret>'
                        map buffer normal '<tab>' ': kaktree-tab-action<ret>'
                        map buffer normal 'u' ': kaktree-change-root up<ret>'
+                       map buffer normal 'H' ': kaktree-hidden-toggle<ret>'
                        try %{ set-option window tabstop 1 }
                        try %{ focus ${kak_client} }
                    }}"
