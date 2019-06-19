@@ -204,7 +204,6 @@ define-command -hidden kaktree-refresh %{ evaluate-commands %sh{
 
     printf "%s\n" "evaluate-commands -client %opt{kaktreeclient} %{ try %{
                        edit! -debug -fifo ${fifo} *kaktree*
-                       hook global BufCloseFifo .* %{ evaluate-commands -buffer *kaktree* %{ set-option buffer readonly true }}
                        map buffer normal '<ret>' ': kaktree-ret-action<ret>'
                        map buffer normal '<tab>' ': kaktree-tab-action<ret>'
                        map buffer normal 'u' ': kaktree-change-root up<ret>'
