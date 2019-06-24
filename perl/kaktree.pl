@@ -80,12 +80,23 @@ sub make_path {
 
 sub add_path {
     my $path = $ENV{"kaktree_path"};
+    my $nodes = $ENV{"kak_opt_kaktree_nodes"};
     my $hit = 0;
+
+    if (index($nodes, "'$path'") != -1) {
+        # we do not add same path twice
+        print "set-option global kaktree_nodes $nodes\n";
+        return;
+    }
+
+    (my $base = $path) =~ s(/[^/]*?$)();
     my @nodes = split(/' '|^'|'$/, $ENV{"kak_opt_kaktree_nodes"});
     shift(@nodes);
 
+    # search for the base of current path. E.g. if we
+    # adding './a/b' we first look for `./a` in the list
     for my $i (0 .. scalar(@nodes) - 1) {
-        if ($path =~ $nodes[$i]) {
+        if ($base eq $nodes[$i]) {
             $hit = 1;
             if ($i < scalar(@nodes)) {
                 splice @nodes, $i + 1, 0, $path;
@@ -96,11 +107,13 @@ sub add_path {
         }
     }
 
+    # if nothing found we add this to the end of the list.
     if ($hit == 0) {
         push @nodes, $path;
     }
 
-    my $nodes = @nodes ? join ' ', map { qq!'$_'! } @nodes : '';
+    # and compose the entire thing back together
+    $nodes = @nodes ? join ' ', map { qq!'$_'! } @nodes : '';
     print "set-option global kaktree_nodes $nodes\n";
 }
 
