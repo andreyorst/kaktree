@@ -78,4 +78,30 @@ sub make_path {
     print "$path\n";
 }
 
+sub add_path {
+    my $path = $ENV{"kaktree_path"};
+    my $hit = 0;
+    my @nodes = split(/' '|^'|'$/, $ENV{"kak_opt_kaktree_nodes"});
+    shift(@nodes);
+
+    for my $i (0 .. scalar(@nodes) - 1) {
+        if ($path =~ $nodes[$i]) {
+            $hit = 1;
+            if ($i < scalar(@nodes)) {
+                splice @nodes, $i + 1, 0, $path;
+            } else {
+                push @nodes, $path;
+            }
+            last;
+        }
+    }
+
+    if ($hit == 0) {
+        push @nodes, $path;
+    }
+
+    my $nodes = @nodes ? join ' ', map { qq!'$_'! } @nodes : '';
+    print "$nodes\n";
+}
+
 1; # this is needed to call sobroutines directly from this file
