@@ -101,7 +101,17 @@ sub add_path {
     }
 
     my $nodes = @nodes ? join ' ', map { qq!'$_'! } @nodes : '';
-    print "$nodes\n";
+    print "set-option global kaktree_nodes $nodes\n";
+}
+
+sub remove_path {
+    my $path = $ENV{"kaktree_path"};
+    my $hit = 0;
+    my @nodes = split(/' '|^'|'$/, $ENV{"kak_opt_kaktree_nodes"});
+    shift(@nodes);
+    @nodes = grep {$_ ne "$path"} @nodes;
+    my $nodes = @nodes ? join ' ', map { qq!'$_'! } @nodes : '';
+    print "set-option global kaktree_nodes $nodes\n";
 }
 
 1; # this is needed to call sobroutines directly from this file
