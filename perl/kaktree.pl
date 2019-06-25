@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 sub build_tree {
-    my $root = $ENV{"kaktree_root"};
+    my $root = $_[0];
     my $open_node = $ENV{"kak_opt_kaktree_dir_icon_open"};
     my $closed_node = $ENV{"kak_opt_kaktree_dir_icon_close"};
     my $file_node = $ENV{"kak_opt_kaktree_file_icon"};
@@ -80,17 +80,17 @@ sub make_path {
 
 sub add_path {
     my $path = $ENV{"kaktree_path"};
-    my $nodes = $ENV{"kak_opt_kaktree_nodes"};
+    my $nodes = $ENV{"kak_opt_kaktree__nodes"};
     my $hit = 0;
 
     if (index($nodes, "'$path'") != -1) {
         # we do not add same path twice
-        print "set-option global kaktree_nodes $nodes\n";
+        print "set-option global kaktree__nodes $nodes\n";
         return;
     }
 
     (my $base = $path) =~ s(/[^/]*?$)();
-    my @nodes = split(/' '|^'|'$/, $ENV{"kak_opt_kaktree_nodes"});
+    my @nodes = split(/' '|^'|'$/, $ENV{"kak_opt_kaktree__nodes"});
     shift(@nodes);
 
     # search for the base of current path. E.g. if we
@@ -114,17 +114,17 @@ sub add_path {
 
     # and compose the entire thing back together
     $nodes = @nodes ? join ' ', map { qq!'$_'! } @nodes : '';
-    print "set-option global kaktree_nodes $nodes\n";
+    print "set-option global kaktree__nodes $nodes\n";
 }
 
 sub remove_path {
     my $path = $ENV{"kaktree_path"};
     my $hit = 0;
-    my @nodes = split(/' '|^'|'$/, $ENV{"kak_opt_kaktree_nodes"});
+    my @nodes = split(/' '|^'|'$/, $ENV{"kak_opt_kaktree__nodes"});
     shift(@nodes);
     @nodes = grep {$_ ne "$path"} @nodes;
     my $nodes = @nodes ? join ' ', map { qq!'$_'! } @nodes : '';
-    print "set-option global kaktree_nodes $nodes\n";
+    print "set-option global kaktree__nodes $nodes\n";
 }
 
 1; # this is needed to call sobroutines directly from this file
