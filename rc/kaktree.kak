@@ -177,7 +177,7 @@ define-command -hidden kaktree-refresh %{ evaluate-commands %sh{
 
     printf "%s\n" "hook global -always KakEnd .* %{ nop %sh{ rm -rf ${tmp} }}"
 
-    basename() {
+    base_name() {
         filename="$1"
         case "$filename" in
           */*[!/]*)
@@ -199,7 +199,7 @@ define-command -hidden kaktree-refresh %{ evaluate-commands %sh{
     # $kak_opt_kaktree__current_indent
     # $kak_opt_kaktree_show_hidden
     kak_opt_kaktree__current_indent=""
-    kaktree_root="$(basename $(pwd))"
+    kaktree_root="$(base_name $(pwd))"
     [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="$kak_opt_kaktree_hidden_arg"
     command $kak_opt_kaktree_ls_command $hidden $(pwd) | perl -e "require qw($kak_opt_kaktree__source/perl/kaktree.pl); build_tree('$kaktree_root');" > ${tree}
 
@@ -272,7 +272,7 @@ define-command -hidden kaktree-dir-unfold %{ evaluate-commands -save-regs 'abc"'
         # $kak_opt_kaktree__current_indent
         # $kak_opt_kaktree_show_hidden
 
-        basename() {
+        base_name() {
             filename="$1"
             case "$filename" in
               */*[!/]*)
@@ -289,8 +289,8 @@ define-command -hidden kaktree-dir-unfold %{ evaluate-commands -save-regs 'abc"'
         }
 
         dir=$(printf "%s\n" "$kak_reg_a" | perl -pe "s/^'|'$//g; s/\s*(\Q$kak_opt_kaktree_dir_icon_open\E|\Q$kak_opt_kaktree_dir_icon_close\E) (.*)$/\$2/g;")
-        kaktree_root="$(basename "$dir")"
-        [ "$dir" = "$(basename $(pwd))" ] && dir="."
+        kaktree_root="$(base_name "$dir")"
+        [ "$dir" = "$(base_name $(pwd))" ] && dir="."
 
         # build full path based on indentation to the currently expanded directory.
         current_path=$(printf "%s\n" "$kak_reg_c" | perl -e "require qw($kak_opt_kaktree__source/perl/kaktree.pl); make_path();")
@@ -329,7 +329,7 @@ define-command -hidden kaktree-file-open %{ evaluate-commands -save-regs 'abc"' 
         # $kak_opt_kaktree_indentation
         # $kak_opt_kaktree__current_indent
 
-        basename() {
+        base_name() {
             filename="$1"
             case "$filename" in
               */*[!/]*)
@@ -378,7 +378,7 @@ define-command -hidden kaktree-change-root -params ..1 %{ evaluate-commands -sav
         # $kak_opt_kaktree__current_indent
         # $kak_opt_kaktree_show_hidden
 
-        basename() {
+        base_name() {
             filename="$1"
             case "$filename" in
               */*[!/]*)
@@ -397,13 +397,13 @@ define-command -hidden kaktree-change-root -params ..1 %{ evaluate-commands -sav
 
         dir=$(printf "%s\n" "$kak_reg_a" | sed "s/^'\|'$//g;s/#/##/g")
         kaktree_root=
-        if [ "$(basename $dir)" = "$(basename $(pwd))" ] || [ "$1" = "up" ]; then
+        if [ "$(base_name $dir)" = "$(base_name $(pwd))" ] || [ "$1" = "up" ]; then
             cd ..
-            dir=$(basename $(pwd))
-            kaktree_root="$(basename $dir)"
+            dir=$(base_name $(pwd))
+            kaktree_root="$(base_name $dir)"
             current_path="$(pwd)/$current_path"
         else
-            kaktree_root="$(basename $dir)"
+            kaktree_root="$(base_name $dir)"
             current_path="$(pwd)/$current_path/$dir"
         fi
 
