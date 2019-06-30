@@ -425,7 +425,7 @@ hook global ClientClose .* %{ evaluate-commands -client %opt{kaktreeclient} %sh{
 
 §
 
-hook global ModuleLoad powerline %§
+hook global ModuleLoaded powerline %§
 
 # format modeline in filetree window
 # requires `powerline.kak' plugin: https://github.com/andreyorst/powerline.kak
