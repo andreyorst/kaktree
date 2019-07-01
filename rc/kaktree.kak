@@ -210,6 +210,7 @@ define-command -hidden kaktree-refresh %{ evaluate-commands %sh{
                        map buffer normal 'u' ': kaktree-change-root up<ret>'
                        map buffer normal 'H' ': kaktree-hidden-toggle<ret>'
                        map buffer normal 'r' ': kaktree-refresh<ret>'
+                       hook buffer RawKey '<mouse:release_left:.*>' kaktree-mouse-action
                        try %{ set-option window tabstop 1 }
                        try %{ focus ${kak_client} }
                    }}"
@@ -230,6 +231,26 @@ define-command -hidden kaktree-ret-action %{ evaluate-commands -save-regs 'a' %{
         set-register a %opt{kaktree_file_icon}
         execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
         kaktree-file-open
+    } catch %{
+        nop
+    }
+}}
+
+define-command -hidden kaktree-mouse-action %{ evaluate-commands -save-regs 'a' %{
+    try %{
+        set-register a %opt{kaktree_dir_icon_close}
+        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        kaktree-dir-unfold
+    } catch %{
+        set-register a %opt{kaktree_dir_icon_open}
+        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        kaktree-dir-fold
+    } catch %{
+        set-register a %opt{kaktree_file_icon}
+        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        kaktree-file-open
+    } catch %{
+        nop
     }
 }}
 
@@ -288,8 +309,9 @@ define-command -hidden kaktree-dir-unfold %{ evaluate-commands -save-regs 'abc"'
             printf "%s\n" "${base}"
         }
 
-        dir=$(printf "%s\n" "$kak_reg_a" | perl -pe "s/^'|'$//g; s/\s*(\Q$kak_opt_kaktree_dir_icon_open\E|\Q$kak_opt_kaktree_dir_icon_close\E) (.*)$/\$2/g;")
+        dir=$(printf "%s\n" "$kak_reg_a" | perl -pe "s/\s*(\Q$kak_opt_kaktree_dir_icon_open\E|\Q$kak_opt_kaktree_dir_icon_close\E) (.*)$/\$2/g;")
         kaktree_root="$(base_name "$dir")"
+
         [ "$dir" = "$(base_name $(pwd))" ] && dir="."
 
         # build full path based on indentation to the currently expanded directory.
@@ -344,13 +366,13 @@ define-command -hidden kaktree-file-open %{ evaluate-commands -save-regs 'abc"' 
             printf "%s\n" "${base}"
         }
 
-        file=$(printf "%s\n" "$kak_reg_a" | perl -pe "s/^'|'$//g; s/\s*(\Q$kak_opt_kaktree_file_icon\E) (.*)$/\$2/g;")
+        file=$(printf "%s\n" "$kak_reg_a" | perl -pe "s/\s*(\Q$kak_opt_kaktree_file_icon\E) (.*)$/\$2/g;")
 
         # build full path based on indentation to the currently expanded directory.
         current_path=$(printf "%s\n" "$kak_reg_c" | perl -e "require qw($kak_opt_kaktree__source/perl/kaktree.pl); make_path();")
         file_path=$(printf "%s\n" "$(pwd)/$current_path/$file" | sed "s/#/##/g")
-        printf "%s\n" "edit -existing %#$file_path#"
         printf "%s\n" "focus %opt{kaktree__jumpclient}"
+        printf "%s\n" "edit -existing %#$file_path#"
     }
 }}
 
@@ -395,7 +417,7 @@ define-command -hidden kaktree-change-root -params ..1 %{ evaluate-commands -sav
 
         current_path=$(printf "%s\n" "$kak_reg_c" | perl -e "require qw($kak_opt_kaktree__source/perl/kaktree.pl); make_path();")
 
-        dir=$(printf "%s\n" "$kak_reg_a" | sed "s/^'\|'$//g;s/#/##/g")
+        dir=$(printf "%s\n" "$kak_reg_a" | sed "s/#/##/g")
         kaktree_root=
         if [ "$(base_name $dir)" = "$(base_name $(pwd))" ] || [ "$1" = "up" ]; then
             cd ..
@@ -417,7 +439,7 @@ define-command -hidden kaktree-change-root -params ..1 %{ evaluate-commands -sav
 }}
 
 hook global ClientClose .* %{ evaluate-commands -client %opt{kaktreeclient} %sh{
-    eval "set -- ${kak_client_list}"
+    eval "set -- ${kak_quoted_client_list}"
     if [ $# -eq 1 ] && [ "$1" = "${kak_opt_kaktreeclient}" ]; then
         printf "%s\n" "kaktree-disable"
     fi
@@ -425,7 +447,7 @@ hook global ClientClose .* %{ evaluate-commands -client %opt{kaktreeclient} %sh{
 
 §
 
-hook global ModuleLoad powerline %§
+hook global ModuleLoaded powerline %§
 
 # format modeline in filetree window
 # requires `powerline.kak' plugin: https://github.com/andreyorst/powerline.kak
