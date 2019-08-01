@@ -310,6 +310,7 @@ define-command -hidden kaktree-dir-unfold %{ evaluate-commands -save-regs 'abc"'
         }
 
         dir=$(printf "%s\n" "$kak_reg_a" | perl -pe "s/\s*(\Q$kak_opt_kaktree_dir_icon_open\E|\Q$kak_opt_kaktree_dir_icon_close\E) (.*)$/\$2/g;")
+
         kaktree_root="$(base_name "$dir")"
 
         [ "$dir" = "$(base_name $(pwd))" ] && dir="."
@@ -319,6 +320,7 @@ define-command -hidden kaktree-dir-unfold %{ evaluate-commands -save-regs 'abc"'
 
         [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="$kak_opt_kaktree_hidden_arg"
         tree=$(command $kak_opt_kaktree_ls_command $hidden "./$current_path/$dir" | perl -e "$kak_opt_kaktree__perl build_tree('$kaktree_root');")
+
         printf "%s\n" "set-register '\"' %{$tree}"
     }
     execute-keys '<a-x>Ra<ret><esc><a-;><space>;'

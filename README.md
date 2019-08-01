@@ -7,7 +7,7 @@ well as `ls` command.
 
 ## Installation
 You need latest Kakoune build from master in order to use
-this plugin. __*still waiting for new stable release with module system...*__
+this plugin.
 
 ## With [plug.kak](https://github.com/andreyorst/plug.kak)
 Add this to your `kakrc`:
