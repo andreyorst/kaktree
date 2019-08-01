@@ -67,7 +67,6 @@ declare-option -hidden str kaktree__jumpclient
 declare-option -hidden str kaktree__active 'false'
 declare-option -hidden str kaktree__onscreen 'false'
 declare-option -hidden str kaktree__current_indent ''
-declare-option -hidden str kaktree__nodes ''
 
 set-face global kaktree_icon_face default,default+b@comment
 set-face global kaktree_hlline_face default,default+@SecondarySelection
