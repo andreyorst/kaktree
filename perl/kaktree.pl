@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 
+# This subroutine builds tree based on output of `ls' command. It recieves
+# current indentation level, and constructs tree node based on it.
 sub build_tree {
     my $root = $_[0];
     my $open_node = $ENV{"kak_opt_kaktree_dir_icon_open"};
@@ -17,10 +19,13 @@ sub build_tree {
 
     chomp(my @input = <>);
 
+    # remove total ...
+    shift(@input);
+
     if ($hidden eq "true") {
         # remove `./' and `../' from tree
-        @input = grep {$_ ne "../"} @input;
-        @input = grep {$_ ne "./"} @input;
+        shift(@input);
+        shift(@input);
     }
 
     my $input_size = scalar @input;
@@ -32,21 +37,30 @@ sub build_tree {
         my @files;
 
         foreach my $item (@items) {
-            if ($item =~ /(.*)\/$/) {
-                print "$current_indent$indent_str$closed_node $1\n";
+            if ($item =~ /([^\s]+\s+){8}(.*)\/$/) {
+                if ($2 =~ /(.*)\s+->\s+.*/) {
+                    print "$current_indent$indent_str$closed_node $1\n";
+                } else {
+                    print "$current_indent$indent_str$closed_node $2\n";
+                }
             } else {
                 push(@files, $item);
             }
         }
 
         foreach my $file (@files) {
-            print "$current_indent$indent_str$file_node $file\n"
+            $file =~ /([^\s]+\s+){8}(.*)$/;
+            print "$current_indent$indent_str$file_node $2\n"
         }
     } else {
         print "$current_indent$indent_str<empty>\n"
     }
 }
 
+# Kaktree doesn't store paths of listed directories and path yet. So
+# `make_path' subroutine works in opposite direction of `build_tree'.
+# It builds path based on indentation in the tree buffer in order
+# to get the location of currently expanded directory in the tree.
 sub make_path {
     my $indent = $ENV{"kak_opt_kaktree_indentation"};
     my $current_indent = length($ENV{"kak_opt_kaktree__current_indent"});
