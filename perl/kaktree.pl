@@ -19,14 +19,8 @@ sub build_tree {
 
     chomp(my @input = <>);
 
-    # remove total ...
+    # remove first line containing total ...
     shift(@input);
-
-    if ($hidden eq "true") {
-        # remove `./' and `../' from tree
-        shift(@input);
-        shift(@input);
-    }
 
     my $input_size = scalar @input;
 

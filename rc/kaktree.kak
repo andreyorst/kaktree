@@ -192,7 +192,7 @@ define-command -hidden kaktree-refresh %{ evaluate-commands %sh{
     # $kak_opt_kaktree_show_hidden
     kak_opt_kaktree__current_indent=""
     kaktree_root="$(base_name $(pwd))"
-    [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="-a"
+    [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="-A"
     command ls -lF $hidden $(pwd) | perl -e "$kak_opt_kaktree__perl build_tree('$kaktree_root');" > ${tree}
 
     printf "%s\n" "evaluate-commands -client %opt{kaktreeclient} %{ try %{
@@ -310,7 +310,7 @@ define-command -hidden kaktree-dir-unfold %{ evaluate-commands -save-regs 'abc"'
         # build full path based on indentation to the currently expanded directory.
         current_path=$(printf "%s\n" "$kak_quoted_reg_c" | perl -e "$kak_opt_kaktree__perl make_path();")
 
-        [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="-a"
+        [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="-A"
         tree=$(command ls -lF $hidden "./$current_path/$dir/" | perl -e "$kak_opt_kaktree__perl build_tree('$kaktree_root');")
 
         printf "%s\n" "set-register '\"' %{$tree}"
@@ -426,7 +426,7 @@ define-command -hidden kaktree-change-root -params ..1 %{ evaluate-commands -sav
         escaped_path=$(printf "%s\n" "$current_path" | sed "s/#/##/g")
         printf "%s\n" "change-directory %#$escaped_path#"
         kak_opt_kaktree__current_indent=""
-        [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="-a"
+        [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="-A"
         tree=$(command ls -lF $hidden "$current_path" | perl -e "$kak_opt_kaktree__perl build_tree('$kaktree_root');" | sed "s/#/##/g")
         printf "%s\n" "set-register '\"' %#$tree#; execute-keys '%Rgg'"
     }
