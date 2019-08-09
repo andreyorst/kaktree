@@ -44,7 +44,11 @@ sub build_tree {
 
         foreach my $file (@files) {
             $file =~ /([^\s]+\s+){8}(.*)$/;
-            print "$current_indent$indent_str$file_node $2\n"
+            if ($2 =~ /(.*)\s+->\s+.*/) {
+                print "$current_indent$indent_str$file_node $1\n";
+            } else {
+                print "$current_indent$indent_str$file_node $2\n";
+            }
         }
     } else {
         print "$current_indent$indent_str<empty>\n"
