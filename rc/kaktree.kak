@@ -54,6 +54,11 @@ bool kaktree_hlline true
 declare-option -docstring "Amount of indentation for nested items. Must be greater than zero." \
 int kaktree_indentation 2
 
+declare-option -docstring "Double click interval." \
+str kaktree_double_click_duration '0.3'
+
+declare-option -hidden str kaktree__current_click ''
+
 # Helper options
 declare-option -hidden str kaktree__jumpclient
 declare-option -hidden str kaktree__active 'false'
@@ -202,9 +207,8 @@ define-command -hidden kaktree-refresh %{ evaluate-commands %sh{
                        map buffer normal 'u' ': kaktree-change-root up<ret>'
                        map buffer normal 'H' ': kaktree-hidden-toggle<ret>'
                        map buffer normal 'r' ': kaktree-refresh<ret>'
-                       hook buffer RawKey '<mouse:release_left:.*>' kaktree-mouse-action
-                       try %{ set-option window tabstop 1 }
-                       try %{ focus ${kak_client} }
+                       hook buffer RawKey '<mouse:press_left:.*>' kaktree-mouse-action
+                       set-option buffer tabstop 1
                    }}"
 
     ( cat ${tree} > ${fifo}; rm -rf ${tmp} ) > /dev/null 2>&1 < /dev/null &
@@ -228,7 +232,25 @@ define-command -hidden kaktree-ret-action %{ evaluate-commands -save-regs 'a' %{
     }
 }}
 
-define-command -hidden kaktree-mouse-action %{ evaluate-commands -save-regs 'a' %{
+define-command -hidden kaktree-mouse-action %{ evaluate-commands -save-regs 'c' %{
+    execute-keys -draft 'x"cy'
+    evaluate-commands %sh{
+        if [ "$kak_reg_c" = "$kak_opt_kaktree__current_click" ]; then
+            printf "%s\n" "kaktree-click-action"
+        else
+            printf "%s\n" "kaktree-set-temporarely %reg{c}"
+        fi
+    }
+}}
+
+define-command -hidden kaktree-set-temporarely -params 1 %{ evaluate-commands %sh{ (
+    [ -z "${1##*&*}" ] && tmp=$(printf "%s" "$1" | sed "s/&/&&/g") || tmp="$1"
+    printf "%s\n" "set-option global kaktree__current_click %&$tmp&" | kak -p $kak_session
+    sleep $kak_opt_kaktree_double_click_duration
+    printf "%s\n" "set-option global kaktree__current_click ''" | kak -p $kak_session
+) >/dev/null 2>&1 </dev/null & }}
+
+define-command -hidden kaktree-click-action %{ evaluate-commands -save-regs 'a' %{
     try %{
         set-register a %opt{kaktree_dir_icon_close}
         execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
