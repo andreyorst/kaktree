@@ -335,13 +335,16 @@ define-command -hidden kaktree-dir-unfold %{ evaluate-commands -save-regs 'abc"'
         [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="-A"
         tree=$(command ls -lF $hidden "./$current_path/$dir/" | perl -e "$kak_opt_kaktree__perl build_tree('$kaktree_root');")
 
-        printf "%s\n" "set-register '\"' %{$tree}"
+        printf "%s\n" "set-register '\"' %{$tree
+}"
+        printf "%s\n" "execute-keys '<a-x>R'"
+        printf "%s\n" "select ${kak_cursor_line}.${kak_cursor_column},${kak_cursor_line}.${kak_cursor_column}"
     }
-    execute-keys '<a-x>Ra<ret><esc><a-;><space>;'
 }}
 
 define-command -hidden kaktree-dir-fold %{ evaluate-commands -save-regs '"/' %sh{
     printf "%s\n" "execute-keys 'j<a-i>idkI<space><esc><a-h>;/\Q<space>${kak_opt_kaktree_dir_icon_open}\E<ret>c${kak_opt_kaktree_dir_icon_close}<esc>gh'"
+        printf "%s\n" "select ${kak_cursor_line}.${kak_cursor_column},${kak_cursor_line}.${kak_cursor_column}"
 }}
 
 define-command -hidden kaktree-file-open %{ evaluate-commands -save-regs 'abc"' %{
