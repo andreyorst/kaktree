@@ -153,8 +153,7 @@ define-command -hidden kaktree-display %{ nop %sh{
                      set-option buffer filetype kaktree
                      rename-client %opt{kaktreeclient}
                      kaktree-refresh
-                 }
-                 focus ${kak_client:-client0}"
+                 }"
 
     if [ -n "$TMUX" ]; then
         [ "${kak_opt_kaktree_split}" = "vertical" ] && split="-v" || split="-h"
