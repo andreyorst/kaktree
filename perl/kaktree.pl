@@ -11,6 +11,7 @@ sub build_tree {
     my $indent = $ENV{"kak_opt_kaktree_indentation"};
     my $current_indent = $ENV{"kak_opt_kaktree__current_indent"};
     my $hidden = $ENV{"kak_opt_kaktree_show_hidden"};
+    my $sort = $ENV{"kak_opt_kaktree_sort"};
     my $indent_str;
 
     for my $i (1 .. $indent) {
@@ -27,28 +28,34 @@ sub build_tree {
     print "$current_indent$open_node $root\n";
 
     if ($input_size > 0) {
-        my @items = sort @input;
         my @files;
+        my @dir_nodes;
+        my @file_nodes;
 
-        foreach my $item (@items) {
-            if ($item =~ /([^\s]+\s+){8}(.*)\/$/) {
-                if ($2 =~ /(.*)\s+->\s+.*/) {
-                    print "$current_indent$indent_str$closed_node $1\n";
-                } else {
-                    print "$current_indent$indent_str$closed_node $2\n";
+        foreach my $item (@input) {
+            if ($item =~ /(?:[^\s]+\s+){8}(.*)\/$/) {
+                if ($1 =~ /(.*)\s+->\s+.*/) {
+                    $1 = $1;
                 }
+                push(@dir_nodes, "$current_indent$indent_str$closed_node $1");
             } else {
-                push(@files, $item);
+                $item =~ /(?:[^\s]+\s+){8}(.*)$/;
+                if ($1 =~ /(.*)\s+->\s+.*/) {
+                    $1 = $1;
+                }
+                push(@file_nodes, "$current_indent$indent_str$file_node $1");
             }
         }
 
-        foreach my $file (@files) {
-            $file =~ /([^\s]+\s+){8}(.*)$/;
-            if ($2 =~ /(.*)\s+->\s+.*/) {
-                print "$current_indent$indent_str$file_node $1\n";
-            } else {
-                print "$current_indent$indent_str$file_node $2\n";
-            }
+        if ((defined $sort) && ($sort eq "true")) {
+            @dir_nodes = sort @dir_nodes;
+            @file_nodes = sort @file_nodes;
+        }
+        foreach my $item (@dir_nodes) {
+            print "$item\n"
+        }
+        foreach my $item (@file_nodes) {
+            print "$item\n"
         }
     } else {
         print "$current_indent$indent_str<empty>\n"

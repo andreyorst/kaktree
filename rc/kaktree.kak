@@ -51,6 +51,9 @@ bool kaktree_show_hidden true
 declare-option -docstring "Highlight current line in kaktree buffer." \
 bool kaktree_hlline true
 
+declare-option -docstring "Sort items in kaktree buffer." \
+bool kaktree_sort true
+
 declare-option -docstring "Amount of indentation for nested items. Must be greater than zero." \
 int kaktree_indentation 2
 
@@ -194,6 +197,7 @@ define-command -hidden kaktree-refresh %{ evaluate-commands %sh{
     # $kak_opt_kaktree_indentation
     # $kak_opt_kaktree__current_indent
     # $kak_opt_kaktree_show_hidden
+    # $kak_opt_kaktree_sort
     kak_opt_kaktree__current_indent=""
     kaktree_root="$(base_name $(pwd))"
     [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="-A"
@@ -305,6 +309,7 @@ define-command -hidden kaktree-dir-unfold %{ evaluate-commands -save-regs 'abc"'
         # $kak_opt_kaktree_indentation
         # $kak_opt_kaktree__current_indent
         # $kak_opt_kaktree_show_hidden
+        # $kak_opt_kaktree_sort
 
         base_name() {
             filename="$1"
@@ -417,6 +422,7 @@ define-command -hidden kaktree-change-root -params ..1 %{ evaluate-commands -sav
         # $kak_opt_kaktree_indentation
         # $kak_opt_kaktree__current_indent
         # $kak_opt_kaktree_show_hidden
+        # $kak_opt_kaktree_sort
 
         base_name() {
             filename="$1"
