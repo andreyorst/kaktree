@@ -39,16 +39,18 @@ sub build_tree {
         my @file_nodes;
         foreach my $item (@input) {
             if ($item =~ /(?:[^\s]+\s+){8}(.*)\/$/) {
-                if ($1 =~ /(.*)\s+->\s+.*/) {
-                    $1 = $1;
+                my $dir = $1;
+                if ($dir =~ /(.*)\s+->\s+.*/) {
+                    $dir = $1;
                 }
-                push(@dir_nodes, $1);
+                push(@dir_nodes, $dir);
             } else {
                 $item =~ /(?:[^\s]+\s+){8}(.*)$/;
-                if ($1 =~ /(.*)\s+->\s+.*/) {
-                    $1 = $1;
+                my $file = $1;
+                if ($file =~ /(.*)\s+->\s+.*/) {
+                    $file = $1;
                 }
-                push(@file_nodes, $1);
+                push(@file_nodes, $file);
             }
         }
 
@@ -56,6 +58,7 @@ sub build_tree {
             @dir_nodes = sort @dir_nodes;
             @file_nodes = sort @file_nodes;
         }
+
         foreach my $item (@dir_nodes) {
             my $item_path = "$path/$item";
             if ($expanded_paths =~ /'$item_path'/) {
@@ -65,6 +68,7 @@ sub build_tree {
                 print "$current_indent$indent_str$closed_node $item\n";
             }
         }
+
         foreach my $item (@file_nodes) {
             print "$current_indent$indent_str$file_node $item\n"
         }
