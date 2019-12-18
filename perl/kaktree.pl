@@ -4,46 +4,51 @@ use warnings;
 # This subroutine builds tree based on output of `ls' command. It recieves
 # current indentation level, and constructs tree node based on it.
 sub build_tree {
-    my $root = $_[0];
+    my $path = $_[0];
+    my $root = $_[1];
     my $open_node = $ENV{"kak_opt_kaktree_dir_icon_open"};
     my $closed_node = $ENV{"kak_opt_kaktree_dir_icon_close"};
     my $file_node = $ENV{"kak_opt_kaktree_file_icon"};
     my $indent = $ENV{"kak_opt_kaktree_indentation"};
     my $current_indent = $ENV{"kak_opt_kaktree__current_indent"};
     my $hidden = $ENV{"kak_opt_kaktree_show_hidden"};
+    my $expanded_paths = $ENV{"kak_quoted_opt_kaktree__expanded_paths"} || '';
     my $sort = $ENV{"kak_opt_kaktree_sort"};
     my $indent_str;
 
-    for my $i (1 .. $indent) {
+    my $extra_indent = (defined $_[2]) ? $_[2] : 1;
+
+    for my $i (1 .. ($indent * $extra_indent)) {
         $indent_str .= " ";
     }
-
-    chomp(my @input = <>);
+    my $hidden_arg = ($hidden eq "true") ? "-A" : "";
+    my $real_path = `readlink -m -- $path`;
+    chomp(my @input = `ls -lF $hidden_arg $real_path`);
 
     # remove first line containing total ...
     shift(@input);
 
     my $input_size = scalar @input;
 
-    print "$current_indent$open_node $root\n";
+    if ($root ne "") {
+        print "$current_indent$open_node $root\n";
+    }
 
     if ($input_size > 0) {
-        my @files;
         my @dir_nodes;
         my @file_nodes;
-
         foreach my $item (@input) {
             if ($item =~ /(?:[^\s]+\s+){8}(.*)\/$/) {
                 if ($1 =~ /(.*)\s+->\s+.*/) {
                     $1 = $1;
                 }
-                push(@dir_nodes, "$current_indent$indent_str$closed_node $1");
+                push(@dir_nodes, $1);
             } else {
                 $item =~ /(?:[^\s]+\s+){8}(.*)$/;
                 if ($1 =~ /(.*)\s+->\s+.*/) {
                     $1 = $1;
                 }
-                push(@file_nodes, "$current_indent$indent_str$file_node $1");
+                push(@file_nodes, $1);
             }
         }
 
@@ -52,10 +57,16 @@ sub build_tree {
             @file_nodes = sort @file_nodes;
         }
         foreach my $item (@dir_nodes) {
-            print "$item\n"
+            my $item_path = "$path/$item";
+            if ($expanded_paths =~ /'$item_path'/) {
+                print "$current_indent$indent_str$open_node $item\n";
+                build_tree($item_path, "", $extra_indent + 1)
+            } else {
+                print "$current_indent$indent_str$closed_node $item\n";
+            }
         }
         foreach my $item (@file_nodes) {
-            print "$item\n"
+            print "$current_indent$indent_str$file_node $item\n"
         }
     } else {
         print "$current_indent$indent_str<empty>\n"
@@ -98,3 +109,4 @@ sub make_path {
 }
 
 1; # this is needed to call sobroutines directly from this file
+# kak: indentwidth=4:tabstop=4
