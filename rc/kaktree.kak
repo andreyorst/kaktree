@@ -1,11 +1,11 @@
-# ╭─────────────╥─────────────────────╮
-# │ Author:     ║ File:               │
-# │ Andrey Orst ║ kaktree.kak         │
-# ╞═════════════╩═════════════════════╡
-# │ Filetree browser for Kakoune      │
-# ╞═══════════════════════════════════╡
-# │ GitHub.com/andreyorst/kaktree.kak │
-# ╰───────────────────────────────────╯
+# ╭─────────────╥─────────────────╮
+# │ Author:     ║ File:           │
+# │ Andrey Orst ║ kaktree.kak     │
+# ╞═════════════╩═════════════════╡
+# │ Filetree browser for Kakoune  │
+# ╞═══════════════════════════════╡
+# │ GitLab.com/andreyorst/kaktree │
+# ╰───────────────────────────────╯
 
 declare-option -hidden str kaktree__source %sh{printf "%s" "${kak_source%/rc/*}"}
 declare-option -hidden str kaktree__perl "require qw(%opt{kaktree__source}/perl/kaktree.pl);"
@@ -60,6 +60,9 @@ int kaktree_indentation 2
 declare-option -docstring "Double click interval." \
 str kaktree_double_click_duration '0.3'
 
+declare-option -docstring "Show the help box on first kaktree launch" \
+bool kaktree_show_help true
+
 declare-option -hidden str kaktree__current_click ''
 
 # Helper options
@@ -87,7 +90,6 @@ define-command -hidden kaktree--hlline-update %{
     try %{ remove-highlighter buffer/hlline }
     try %{ add-highlighter buffer/hlline line %val{cursor_line} kaktree_hlline_face }
 }
-
 
 define-command -hidden kaktree--hlline-toggle %{ try %{ evaluate-commands -buffer *kaktree* %sh{
     if [ "$kak_opt_kaktree_hlline" = "true" ]; then
@@ -146,7 +148,10 @@ kaktree-toggle %{ evaluate-commands %sh{
 
 define-command -hidden kaktree--display %{ nop %sh{
     [ "${kak_opt_kaktree__onscreen}" = "true" ] && exit
-
+    if [ "${kak_opt_kaktree_show_help}" = "true" ]; then
+        printf "%s\n" "set-option global kaktree_show_help false" | kak -p ${kak_session}
+        show_help="kaktree-help"
+    fi
     kaktree_cmd="try %{
                      buffer *kaktree*
                      rename-client %opt{kaktreeclient}
@@ -155,6 +160,7 @@ define-command -hidden kaktree--display %{ nop %sh{
                      set-option buffer filetype kaktree
                      rename-client %opt{kaktreeclient}
                      kaktree--refresh
+                     $show_help
                  }"
 
     if [ -n "$TMUX" ]; then
@@ -232,9 +238,7 @@ define-command -hidden kaktree--refresh %{ evaluate-commands %sh{
     (
         cat ${tree} > ${fifo}; rm -rf ${tmp};
         # Restore the selections after the tree has been loaded
-        printf "%s\n" "evaluate-commands -client %opt{kaktreeclient} %{
-            select $saved_selection
-        }" | kak -p "$kak_session"
+        printf "%s\n" "evaluate-commands -client %opt{kaktreeclient} %{ select $saved_selection }" | kak -p "$kak_session"
         printf "%s\n" "kaktree--hlline-update" | kak -p "$kak_session"
     ) > /dev/null 2>&1 < /dev/null &
 }}
