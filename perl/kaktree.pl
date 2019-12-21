@@ -1,3 +1,11 @@
+# ╭─────────────╥─────────────────╮
+# │ Author:     ║ File:           │
+# │ Andrey Orst ║ kaktree.pl      │
+# ╞═════════════╩═════════════════╡
+# │ Perl core of kaktree plugin   │
+# ╞═══════════════════════════════╡
+# │ GitLab.com/andreyorst/kaktree │
+# ╰───────────────────────────────╯
 use strict;
 use warnings;
 
@@ -25,8 +33,10 @@ sub build_tree {
     my $real_path = `readlink -m -- $path`;
     chomp(my @input = `ls -lF $hidden_arg $real_path`);
 
-    # remove first line containing total ...
-    shift(@input);
+    # remove first line containing `total ...'
+    if ($input[0] =~ /total\s+\d+/){
+        shift(@input);
+    }
 
     my $input_size = scalar @input;
 
