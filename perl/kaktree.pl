@@ -30,7 +30,14 @@ sub build_tree {
         $indent_str .= " ";
     }
     my $hidden_arg = ($hidden eq "true") ? "-A" : "";
-    my $real_path = `readlink -m -- $path`;
+    my $real_path;
+
+    if (`uname -s` =~ /Darwin.*/) {
+        $real_path = `realpath -m -- $path`;
+    } else {
+        $real_path = `readlink -m -- $path`;
+    }
+
     chomp(my @input = `ls -lF $hidden_arg $real_path`);
 
     # remove first line containing `total ...'
