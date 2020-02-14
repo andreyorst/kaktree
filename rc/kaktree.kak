@@ -173,6 +173,11 @@ define-command -hidden kaktree--display %{ nop %sh{
     fi
 }}
 
+define-command -docstring "kaktree-focus: Focus Kaktree client" \
+kaktree-focus %{ try %{
+    focus kaktreeclient
+}}
+
 define-command -hidden kaktree--refresh %{ evaluate-commands %sh{
     saved_selection="$kak_selections_desc"
 
