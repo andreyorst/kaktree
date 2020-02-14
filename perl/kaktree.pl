@@ -38,7 +38,7 @@ sub build_tree {
         $real_path = `readlink -m -- $path`;
     }
 
-    chomp(my @input = `ls -lF $hidden_arg $real_path`);
+    chomp(my @input = `command ls -lF $hidden_arg $real_path`);
 
     # remove first line containing `total ...'
     if ($input[0] =~ /total\s+\d+/){
@@ -61,8 +61,7 @@ sub build_tree {
                     $dir = $1;
                 }
                 push(@dir_nodes, $dir);
-            } else {
-                $item =~ /(?:[^\s]+\s+){8}(.*)$/;
+            } elsif ($item =~ /(?:[^\s]+\s+){8}(.*)$/) {
                 my $file = $1;
                 if ($file =~ /(.*)\s+->\s+.*/) {
                     $file = $1;
@@ -72,8 +71,8 @@ sub build_tree {
         }
 
         if ((defined $sort) && ($sort eq "true")) {
-            @dir_nodes = sort @dir_nodes;
-            @file_nodes = sort @file_nodes;
+            if (@dir_nodes) { @dir_nodes = sort @dir_nodes; }
+            if (@file_nodes) { @file_nodes = sort @file_nodes; }
         }
 
         foreach my $item (@dir_nodes) {
