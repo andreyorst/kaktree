@@ -3,7 +3,7 @@
 ![kaktree](https://user-images.githubusercontent.com/19470159/59667890-2d397780-91c0-11e9-9214-e32b04539e7a.png)
 
 This plugin displays the interactive filetree. It requires Tmux and Perl, as
-well as `ls` command that supports at least `-l`, `-F`, and `-a` flags.
+well as `ls` command that supports at least `-1`, `-F`, `-Q`, `-L`, and `-A` flags.
 
 ## Installation
 You need latest Kakoune build from master in order to use
