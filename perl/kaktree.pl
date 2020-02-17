@@ -39,12 +39,8 @@ sub build_tree {
         $real_path = `readlink -m -- $escaped_path`;
     }
 
-    chomp(my @input = `command ls -lF $hidden_arg $real_path`);
-
-    # remove first line containing `total ...'
-    if ($input[0] =~ /total\s+\d+/){
-        shift(@input);
-    }
+    $real_path =~ s/ /\\ /g;
+    chomp(my @input = `ls -1LFQ 2>&- $hidden_arg $real_path`);
 
     my $input_size = scalar @input;
 
@@ -56,18 +52,12 @@ sub build_tree {
         my @dir_nodes;
         my @file_nodes;
         foreach my $item (@input) {
-            if ($item =~ /(?:[^\s]+\s+){8}(.*)\/$/) {
-                my $dir = $1;
-                if ($dir =~ /(.*)\s+->\s+.*/) {
-                    $dir = $1;
-                }
-                push(@dir_nodes, $dir);
-            } elsif ($item =~ /(?:[^\s]+\s+){8}(.*)$/) {
-                my $file = $1;
-                if ($file =~ /(.*)\s+->\s+.*/) {
-                    $file = $1;
-                }
-                push(@file_nodes, $file);
+            (my $unescaped = $item) =~ s/"(.*)".?$/$1/;
+            $unescaped =~ s/\\(["@])/$1/g;
+            if ($item =~ /"(.*)"\/$/) {
+                push(@dir_nodes, $unescaped);
+            } else {
+                push(@file_nodes, $unescaped);
             }
         }
 
