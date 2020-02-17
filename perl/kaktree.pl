@@ -13,7 +13,6 @@ use warnings;
 # current indentation level, and constructs tree node based on it.
 sub build_tree {
     my $path = $_[0];
-    (my $escaped_path = $path) =~ s/([ "])/\\$1/g;
     my $root = $_[1];
     my $open_node = $ENV{"kak_opt_kaktree_dir_icon_open"};
     my $closed_node = $ENV{"kak_opt_kaktree_dir_icon_close"};
@@ -33,14 +32,18 @@ sub build_tree {
     my $hidden_arg = ($hidden eq "true") ? "-A" : "";
     my $real_path;
 
+    (my $escaped_path = $path) =~ s/"/\\"/g;
+
     if (`uname -s` =~ /Darwin.*/) {
-        $real_path = `realpath -m -- $escaped_path`;
+        $real_path = `realpath -m -- "$escaped_path"`;
     } else {
-        $real_path = `readlink -m -- $escaped_path`;
+        $real_path = `readlink -m -- "$escaped_path"`;
     }
 
-    $real_path =~ s/ /\\ /g;
-    chomp(my @input = `ls -1LFQ 2>&- $hidden_arg $real_path`);
+    $real_path =~ s/\s+$//;
+    $real_path =~ s/"/\\"/g;
+
+    chomp(my @input = `ls -1LFQ 2>&- $hidden_arg "$real_path"`);
 
     my $input_size = scalar @input;
 
