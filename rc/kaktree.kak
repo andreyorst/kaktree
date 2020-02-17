@@ -188,21 +188,6 @@ define-command -hidden kaktree--refresh %{ evaluate-commands %sh{
 
     printf "%s\n" "hook global -always KakEnd .* %{ nop %sh{ rm -rf ${tmp} }}"
 
-    base_name() {
-        filename="$1"
-        case "$filename" in
-          */*[!/]*)
-            trail=${filename##*[!/]}
-            filename=${filename%%"$trail"}
-            base=${filename##*/} ;;
-          *[!/]*)
-            trail=${filename##*[!/]}
-            base=${filename%%"$trail"} ;;
-          *) base="/" ;;
-        esac
-        printf "%s\n" "${base}"
-    }
-
     # $kak_opt_kaktree_dir_icon_open
     # $kak_opt_kaktree_dir_icon_close
     # $kak_opt_kaktree_file_icon
@@ -212,7 +197,8 @@ define-command -hidden kaktree--refresh %{ evaluate-commands %sh{
     # $kak_opt_kaktree_show_hidden
     # $kak_opt_kaktree_sort
     kak_opt_kaktree__current_indent=""
-    kaktree_root="$(base_name $(pwd))"
+    kaktree_root="$(basename -- "$(pwd)")"
+
     [ "$kak_opt_kaktree_show_hidden" = "true" ] && hidden="-A"
     command perl -e "$kak_opt_kaktree__perl build_tree('$(pwd)', '$kaktree_root');" > ${tree}
 
