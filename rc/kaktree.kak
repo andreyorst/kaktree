@@ -342,8 +342,13 @@ define-command -hidden kaktree--dir-unfold %{ evaluate-commands -save-regs 'abck
         # $kak_opt_kaktree_sort
         dir_path="$kak_reg_k"
         kaktree_root=$(basename -- "$dir_path")
-        tree=$(command perl -e "$kak_opt_kaktree__perl build_tree('$dir_path', '$kaktree_root');")
-        printf "%s\n" "set -add global kaktree__expanded_paths '$dir_path'"
+
+        quoted_root=$(echo "$kaktree_root" | sed 's:/:\\/:g')
+        quoted_dir=$(echo "$dir_path" | sed 's:/:\\/:g')
+
+        tree=$(command perl -e "$kak_opt_kaktree__perl build_tree(q/$quoted_dir/, q/$quoted_root/);")
+        dir_path=$(echo "$kak_reg_k" | sed 's/#/##/g')
+        printf "%s\n" "set -add global kaktree__expanded_paths %#$dir_path#"
 
         printf "%s\n" "set-register '\"' %{$tree
 }"
@@ -401,8 +406,8 @@ define-command -hidden kaktree--get-current-path -params ..1 %{ evaluate-command
     evaluate-commands %sh{
         # Portable command to get a canonicalized path
         real_path() {
-            cd "$(dirname "$1")"
-            echo "$(pwd)/$(basename "$1")"
+            cd "$(dirname -- "$1")"
+            echo "$(pwd)/$(basename -- "$1")"
         }
         register=${1:-k}
         # Perl will need these variables:
@@ -415,11 +420,12 @@ define-command -hidden kaktree--get-current-path -params ..1 %{ evaluate-command
         file=$(printf "%s\n" "$kak_reg_a" | perl -pe "s/\s*(\Q$kak_opt_kaktree_file_icon\E|\Q$kak_opt_kaktree_dir_icon_close\E|\Q$kak_opt_kaktree_dir_icon_open\E) (.*)$/\$2/g;")
 
         # build full path based on indentation to the currently expanded directory.
-        current_path=$(printf "%s\n" "$kak_quoted_reg_c" | perl -e "$kak_opt_kaktree__perl make_path();")
-        file_path=$(printf "%s\n" "$(pwd)/$current_path/$file" | sed "s/#/##/g")
+        current_path=$(printf "%s\n" "$kak_reg_c" | perl -e "$kak_opt_kaktree__perl make_path();")
+        file_path=$(printf "%s\n" "${PWD%/*}/$current_path/$file")
         file_path=$(real_path "$file_path")
         # If the cursor is at 1, we're at the top level
         [ $kak_cursor_line = 1 ] && file_path="$(pwd)"
+        file_path=$(echo $file_path | sed "s/#/##/g")
         printf "%s\n" "set-register $register %#$file_path#"
     }
 }}

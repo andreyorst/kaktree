@@ -32,22 +32,22 @@ sub build_tree {
     my $hidden_arg = ($hidden eq "true") ? "-A" : "";
     my $real_path;
 
-    (my $escaped_path = $path) =~ s/"/\\"/g;
-
+    my $escaped_path = escape_path($path);
     if (`uname -s` =~ /Darwin.*/) {
-        $real_path = `realpath -m -- "$escaped_path"`;
+        $real_path = `realpath -m -- $escaped_path`;
     } else {
-        $real_path = `readlink -m -- "$escaped_path"`;
+        $real_path = `readlink -m -- $escaped_path`;
     }
 
     $real_path =~ s/\s+$//;
-    $real_path =~ s/"/\\"/g;
+    $real_path = escape_path($real_path);
 
-    chomp(my @input = `ls -1LFQ 2>&- $hidden_arg "$real_path"`);
+    chomp(my @input = `ls -1LFb $hidden_arg $real_path`);
 
     my $input_size = scalar @input;
 
     if ($root ne "") {
+        $root = unescape_path($root);
         print "$current_indent$open_node $root\n";
     }
 
@@ -55,12 +55,13 @@ sub build_tree {
         my @dir_nodes;
         my @file_nodes;
         foreach my $item (@input) {
-            (my $unescaped = $item) =~ s/"(.*)".?$/$1/;
-            $unescaped =~ s/\\(["@])/$1/g;
-            if ($item =~ /"(.*)"\/$/) {
-                push(@dir_nodes, $unescaped);
-            } else {
-                push(@file_nodes, $unescaped);
+            if ($item =~ /^(.*?)([\/=%|*])?$/) {
+                my $unescaped = unescape_path($1);
+                if ((defined $2) && ($2 eq '/')) {
+                    push(@dir_nodes, $unescaped);
+                } else {
+                    push(@file_nodes, $unescaped);
+                }
             }
         }
 
@@ -120,6 +121,18 @@ sub make_path {
     my $path = join("/", reverse @dirs);
 
     print "$path\n";
+}
+
+sub escape_path {
+    my $path = $_[0];
+    $path =~ s/([@ '"])/\\$1/g;
+    return $path;
+}
+
+sub unescape_path {
+    my $path = $_[0];
+    $path =~ s/\\([@ '"])/$1/g;
+    return $path;
 }
 
 1; # this is needed to call sobroutines directly from this file
