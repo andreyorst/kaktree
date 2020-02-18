@@ -193,7 +193,7 @@ define-command -hidden kaktree--refresh %{ evaluate-commands %sh{
     # $kak_opt_kaktree_file_icon
     # $kak_opt_kaktree_indentation
     # $kak_opt_kaktree__current_indent
-    # $kak_quoted_opt_kaktree__expanded_paths
+    # $kak_opt_kaktree__expanded_paths
     # $kak_opt_kaktree_show_hidden
     # $kak_opt_kaktree_sort
     kak_opt_kaktree__current_indent=""
@@ -338,7 +338,7 @@ define-command -hidden kaktree--dir-unfold %{ evaluate-commands -save-regs 'abck
         # $kak_opt_kaktree_indentation
         # $kak_opt_kaktree__current_indent
         # $kak_opt_kaktree_show_hidden
-        # $kak_quoted_opt_kaktree__expanded_paths
+        # $kak_opt_kaktree__expanded_paths
         # $kak_opt_kaktree_sort
         dir_path="$kak_reg_k"
         kaktree_root=$(basename -- "$dir_path")
@@ -360,7 +360,8 @@ define-command -hidden kaktree--dir-unfold %{ evaluate-commands -save-regs 'abck
 define-command -hidden kaktree--dir-fold %{ evaluate-commands -save-regs 'k"/' %{
     kaktree--get-current-path
     evaluate-commands %sh{
-        expanded=$(echo " $kak_quoted_opt_kaktree__expanded_paths " | sed "s| $kak_quoted_reg_k | |g")
+        dir_path=$(echo "$kak_reg_k" | sed 's/#/##/g')
+        expanded=$(echo " $kak_opt_kaktree__expanded_paths " | sed "s| $dir_path | |g")
         printf "%s\n" "set global kaktree__expanded_paths $expanded"
 
         # Perform the deletion

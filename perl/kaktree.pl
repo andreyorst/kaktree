@@ -20,7 +20,7 @@ sub build_tree {
     my $indent = $ENV{"kak_opt_kaktree_indentation"};
     my $current_indent = $ENV{"kak_opt_kaktree__current_indent"};
     my $hidden = $ENV{"kak_opt_kaktree_show_hidden"};
-    my $expanded_paths = $ENV{"kak_quoted_opt_kaktree__expanded_paths"} || '';
+    my $expanded_paths = $ENV{"kak_opt_kaktree__expanded_paths"} || '';
     my $sort = $ENV{"kak_opt_kaktree_sort"};
     my $indent_str;
 
@@ -42,7 +42,7 @@ sub build_tree {
     $real_path =~ s/\s+$//;
     $real_path = escape_path($real_path);
 
-    chomp(my @input = `ls -1LFb $hidden_arg $real_path`);
+    chomp(my @input = `ls -1LFb 2>&- $hidden_arg $real_path`);
 
     my $input_size = scalar @input;
 
@@ -71,8 +71,8 @@ sub build_tree {
         }
 
         foreach my $item (@dir_nodes) {
-            my $item_path = "$path/$item";
-            if ($expanded_paths =~ /'$item_path'/) {
+            my $item_path = unescape_path("$path/$item");
+            if ($expanded_paths =~ /$item_path/) {
                 print "$current_indent$indent_str$open_node $item\n";
                 build_tree($item_path, "", $extra_indent + 1)
             } else {
