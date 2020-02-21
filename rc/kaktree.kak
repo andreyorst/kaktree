@@ -121,7 +121,7 @@ define-command -hidden kaktree--enable-impl %{
                        hook -group kaktree-watchers global FocusIn (?!${kak_opt_kaktreeclient}).* %{
                            set-option global kaktree__jumpclient %{${kak_client:-client0}}
                        }
-                       hook global ClientClose ${kak_opt_kaktreeclient} %{ kaktree-disable }
+                       hook -group kaktree-exit global ClientClose ${kak_opt_kaktreeclient} %{ kaktree-disable }
                        "
     }
 }
@@ -139,10 +139,12 @@ define-command -docstring "kaktree-toggle: Toggle kaktree window on and off" \
 kaktree-toggle %{ evaluate-commands %sh{
     if [ "${kak_opt_kaktree__active}" = "true" ]; then
         if [ "${kak_opt_kaktree__onscreen}" = "true" ]; then
-            printf "%s\n" "evaluate-commands -client %opt{kaktreeclient} quit
+            printf "%s\n" "remove-hooks global kaktree-exit
+                           evaluate-commands -client %opt{kaktreeclient} quit
                            set-option global kaktree__onscreen false"
         else
-            printf "%s\n" "evaluate-commands kaktree--display
+            printf "%s\n" "hook -group kaktree-exit global ClientClose ${kak_opt_kaktreeclient} %{ kaktree-disable }
+                           evaluate-commands kaktree--display
                            set-option global kaktree__onscreen true"
         fi
     else
