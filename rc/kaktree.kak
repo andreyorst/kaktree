@@ -120,7 +120,9 @@ define-command -hidden kaktree--enable-impl %{
                        set-option global kaktree__active true
                        hook -group kaktree-watchers global FocusIn (?!${kak_opt_kaktreeclient}).* %{
                            set-option global kaktree__jumpclient %{${kak_client:-client0}}
-                       }"
+                       }
+                       hook global ClientClose ${kak_opt_kaktreeclient} %{ kaktree-disable }
+                       "
     }
 }
 
@@ -143,6 +145,10 @@ kaktree-toggle %{ evaluate-commands %sh{
             printf "%s\n" "evaluate-commands kaktree--display
                            set-option global kaktree__onscreen true"
         fi
+    else
+        printf "%s\n" "evaluate-commands kaktree-enable
+                       evaluate-commands kaktree--display
+                       set-option global kaktree__onscreen true"
     fi
 }}
 
@@ -360,9 +366,12 @@ define-command -hidden kaktree--dir-unfold %{ evaluate-commands -save-regs 'abck
 define-command -hidden kaktree--dir-fold %{ evaluate-commands -save-regs 'k"/' %{
     kaktree--get-current-path
     evaluate-commands %sh{
-        dir_path=$(echo "$kak_reg_k" | sed 's/#/##/g')
-        expanded=$(echo " $kak_opt_kaktree__expanded_paths " | sed "s| $dir_path | |g")
-        printf "%s\n" "set global kaktree__expanded_paths $expanded"
+        dir_path=$(echo "$kak_reg_k" | sed "s:/:\\\\/:g;s/'/'\\\\\\\\\''/g")
+        echo "dir_path: $dir_path" 1>&2
+        echo "expanded: $kak_quoted_opt_kaktree__expanded_paths" 1>&2
+        expanded=$(echo "$kak_quoted_opt_kaktree__expanded_paths" | sed "s/'$dir_path'//g;s/'' //g")
+        echo "Expanded: $expanded" 1>&2
+        printf "%s\n" "set global kaktree__expanded_paths ${expanded:-''}"
 
         # Perform the deletion
         printf "%s\n" "execute-keys 'j<a-i>idkI<space><esc><a-h>;/\Q<space>${kak_opt_kaktree_dir_icon_open}\E<ret>c${kak_opt_kaktree_dir_icon_close}<esc>gh'"
