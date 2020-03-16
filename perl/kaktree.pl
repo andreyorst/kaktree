@@ -8,6 +8,7 @@
 # ╰───────────────────────────────╯
 use strict;
 use warnings;
+use Cwd "abs_path";
 
 # This subroutine builds tree based on output of `ls' command. It recieves
 # current indentation level, and constructs tree node based on it.
@@ -29,15 +30,9 @@ sub build_tree {
     for my $i (1 .. ($indent * $extra_indent)) {
         $indent_str .= " ";
     }
-    my $hidden_arg = ($hidden eq "true") ? "-A" : "";
-    my $real_path;
 
-    my $escaped_path = escape_path($path);
-    if (`uname -s` =~ /Darwin.*/) {
-        $real_path = `realpath -m -- $escaped_path`;
-    } else {
-        $real_path = `readlink -m -- $escaped_path`;
-    }
+    my $hidden_arg = ($hidden eq "true") ? "-A" : "";
+    my $real_path = abs_path(escape_path($path));
 
     $real_path =~ s/\s+$//;
     $real_path = escape_path($real_path);
