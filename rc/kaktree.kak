@@ -63,6 +63,13 @@ str kaktree_double_click_duration '0.3'
 declare-option -docstring "Show the help box on first kaktree launch" \
 bool kaktree_show_help true
 
+declare-option -docstring "Should kaktree open file when <tab> key is pressed" \
+bool kaktree_tab_open_file false
+
+define-command -hidden kaktree--tab-open-file %{ evaluate-commands %sh{
+    [ "$kak_opt_kaktree_tab_open_file" = "true" ] && echo nop || echo false
+}}
+
 declare-option -hidden str kaktree__current_click ''
 
 # Helper options
@@ -331,6 +338,11 @@ define-command -hidden kaktree--tab-action %{ evaluate-commands -save-regs 'a' %
         set-register a %opt{kaktree_dir_icon_open}
         execute-keys -draft '<a-x>s^\h*\Q<c-r>a\E<ret>'
         kaktree--dir-fold
+    } catch %{
+        kaktree--tab-open-file
+        set-register a %opt{kaktree_file_icon}
+        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        kaktree--file-open
     } catch %{
         nop
     }

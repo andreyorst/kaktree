@@ -2,8 +2,9 @@
 
 ![kaktree](https://user-images.githubusercontent.com/19470159/59667890-2d397780-91c0-11e9-9214-e32b04539e7a.png)
 
-This plugin displays the interactive filetree. It requires Tmux and Perl, as
-well as `ls` command that supports at least `-1`, `-F`, `-B`, `-L`, and `-A` flags.
+This plugin displays the interactive file tree. It requires Perl, as well as
+`ls` command that supports at least `-1`, `-F`, `-B`, `-L`, and `-A`
+flags. Works best with Tmux.
 
 ## Installation
 You need latest Kakoune build from master in order to use
@@ -27,10 +28,11 @@ plug "andreyorst/kaktree" config %{
 Restart Kakoune or re-source your `kakrc` and call `plug-install` command.
 
 ### Without plugin manager
-Clone this repo to your autoload directory, or source `kaktree.kak` file from your `kakrc`.
+Clone this repository to your `autoload` directory, or source `kaktree.kak` file
+from your `kakrc`.
 
 It's strongly recommended to disable line numbers and wrap highlighters as shown
-in the plug.kak example above.
+in the `plug.kak` example above.
 
 ## Configuration
 There are set of options that affect how `kaktree` works:
@@ -38,7 +40,7 @@ There are set of options that affect how `kaktree` works:
 - `kaktreeclient` - the name of the client that will be used to display
   `kaktree` buffer.
 - `kaktree_split` - how to split TMUX (horizontally or vertically).
-- `kaktree_side` - the side where `kaktree` will be displayed in TMUX.
+- `kaktree_side` - the side where `kaktree` buffer will be displayed in TMUX.
 - `kaktree_size` - size of the split.
 - `kaktree_dir_icon_close` - icon for closed directory.
 - `kaktree_dir_icon_open` - icon for opened directory.
@@ -47,8 +49,10 @@ There are set of options that affect how `kaktree` works:
 - `kaktree_hlline` - configures highlighting of current line in the tree.
 - `kaktree_sort` - whether to sort items in the tree.
 - `kaktree_double_click_duration` - amount of time Kakoune waits to register
-  double clicks in the kaktree.
-- `kaktree_show_help` - whether to display help box on first launch of kaktree.
+  double clicks in the Kaktree.
+- `kaktree_show_help` - whether to display help box on first launch of Kaktree.
+- `kaktree_tab_open_file` - whether Kaktree should open file if <kbd>Tab</kbd>
+  key was pressed over it.
 
 For example, to have nice folder and file icons as on the screenshot add this to
 your configuration (assuming that your font has these characters and your
@@ -65,7 +69,7 @@ plug "andreyorst/kaktree" defer kaktree %{
 ```
 
 If you're not using plug.kak, replace `defer` with `hook global
-ModuleLoaded`. Beware that `'⠀⠀🖺'` the first two characters here are not spaces,
-but invisible Unicode symbols. Currently Kaktree handles tree structure based on
-indentation, so in order to do alignment of icons you should use something that
-doesn't match `\s` regexp atom.
+ModuleLoaded`. Beware that `'⠀⠀🖺'` the first two characters here are not
+ordinary spaces, but invisible Unicode symbols. Currently Kaktree handles tree
+structure based on indentation, so in order to do alignment of icons you should
+use something that doesn't match `\s` regexp atom.
