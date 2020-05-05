@@ -72,6 +72,10 @@ define-command -hidden kaktree--tab-open-file %{ evaluate-commands %sh{
 
 declare-option -hidden str kaktree__current_click ''
 
+hook -group kaktree-jumpclient-watcher global FocusOut .* %{ evaluate-commands %sh{
+    [ "$kak_client" != "$kak_opt_kaktreeclient" ] && printf "%s\n" "set-option global kaktree__jumpclient $kak_client"
+}}
+
 # Helper options
 declare-option -hidden str kaktree__jumpclient
 declare-option -hidden str kaktree__active 'false'
