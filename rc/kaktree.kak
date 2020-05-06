@@ -309,7 +309,7 @@ define-command -hidden kaktree--alt-ret-action %{ evaluate-commands -save-regs '
     } catch %{
         set-register a %opt{kaktree_file_icon}
         execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
-        kaktree--file-open-client
+        kaktree--file-open-in-client
     } catch %{
         nop
     }
@@ -512,6 +512,7 @@ define-command -hidden kaktree--file-open -params 1 %{
 
 define-command -hidden kaktree--label-clients %{ evaluate-commands %sh{
     eval "set -- $kak_quoted_client_list"
+    [ $# -eq 2 ] && [ -z "${kak_quoted_client_list%%*$kak_quoted_opt_kaktreeclient*}" ] && exit
     client_number=1
     while [ $# -gt 0 ]; do
         if [ "$1" != "$kak_opt_kaktreeclient" ]; then
@@ -524,15 +525,25 @@ define-command -hidden kaktree--label-clients %{ evaluate-commands %sh{
 
 define-command -hidden kaktree--unlabel-clients %{ evaluate-commands %sh{
     eval "set -- $kak_quoted_client_list"
+    [ $# -eq 2 ] && [ -z "${kak_quoted_client_list%%*$kak_quoted_opt_kaktreeclient*}" ] && exit
     while [ $# -gt 0 ]; do
-        if [ "$1" != "$kak_opt_kaktreeclient" ]; then
-            printf "%s\n" "evaluate-commands -client $1 info %{}" | kak -p $kak_session
-        fi
+        printf "%s\n" "evaluate-commands -client $1 info %{}" | kak -p $kak_session
         shift
     done
 }}
-define-command -hidden kaktree--file-open-client %{
+
+define-command -hidden kaktree--file-open-in-client %{
     kaktree--label-clients
+    evaluate-commands %sh{
+        eval "set -- $kak_quoted_client_list"
+        if [ $# -eq 2 ] && [ -z "${kak_quoted_client_list%%*$kak_quoted_opt_kaktreeclient*}" ]; then
+            printf "%s\n" "kaktree--file-open $kak_quoted_opt_kaktree__jumpclient"
+        else
+            printf "%s\n" "kaktree--file-open-in-client-impl"
+        fi
+    }
+}
+define-command -hidden kaktree--file-open-in-client-impl %{
     prompt "choose client by number: " %{ evaluate-commands %sh{
         choosen_client=$kak_text
         eval "set -- $kak_quoted_client_list"
@@ -547,8 +558,8 @@ define-command -hidden kaktree--file-open-client %{
             client_number=$((client_number + 1))
             shift
         done
-        [ -z "$client_name" ] && printf "%s\n" "evaluate-commands -client $kak_opt_kaktree__jumpclient echo -markup %{{Error}no client with \'$kak_text' label found, falling back to \'$kak_opt_kaktree__jumpclient'}"
-        printf "%s\n" "kaktree--file-open ${client_name:-$kak_opt_kaktree__jumpclient}"
+        [ -z "$client_name" ] && printf "%s\n" "evaluate-commands -client $kak_quoted_opt_kaktree__jumpclient echo -markup %{{Error}no client with \'$kak_text' label found, falling back to \'$kak_quoted_opt_kaktree__jumpclient'}"
+        printf "%s\n" "kaktree--file-open ${client_name:-$kak_quoted_opt_kaktree__jumpclient}"
         printf "%s\n" "kaktree--unlabel-clients"
     }}
 }
