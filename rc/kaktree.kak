@@ -72,10 +72,6 @@ define-command -hidden kaktree--tab-open-file %{ evaluate-commands %sh{
 
 declare-option -hidden str kaktree__current_click ''
 
-hook -group kaktree-jumpclient-watcher global FocusOut .* %{ evaluate-commands %sh{
-    [ "$kak_client" != "$kak_opt_kaktreeclient" ] && printf "%s\n" "set-option global kaktree__jumpclient $kak_client"
-}}
-
 # Helper options
 declare-option -hidden str kaktree__jumpclient
 declare-option -hidden str kaktree__active 'false'
@@ -134,6 +130,10 @@ define-command -hidden kaktree--enable-impl %{
                        }
                        hook -group kaktree-exit global ClientClose ${kak_opt_kaktreeclient} %{ kaktree-disable }
                        "
+        printf "%s\n" 'hook -group kaktree-jumpclient-watcher global FocusOut .* %{ evaluate-commands %sh{
+                           [ "$kak_client" != "$kak_opt_kaktreeclient" ] && printf "%s\n" "set-option global kaktree__jumpclient $kak_client"
+                       }}'
+
     }
 }
 
@@ -142,6 +142,7 @@ kaktree-disable %{
     set-option global kaktree__active 'false'
     set-option global kaktree__onscreen 'false'
     remove-hooks global kaktree-watchers
+    remove-hooks global kaktree-jumpclient-watcher
     try %{ delete-buffer! *kaktree* } catch %{ echo -debug "Can't delete *kaktree* buffer. Error message: %val{error}" }
     try %{ evaluate-commands -client %opt{kaktreeclient} quit } catch %{ echo -debug "Can't close %opt{kaktreeclient}. Error message: %val{error}" }
 }
@@ -290,7 +291,7 @@ define-command -hidden kaktree--ret-action %{ evaluate-commands -save-regs 'a' %
     } catch %{
         set-register a %opt{kaktree_file_icon}
         execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
-        kaktree--file-open %opt{kaktreeclient}
+        kaktree--file-open %opt{kaktree__jumpclient}
     } catch %{
         nop
     }
@@ -347,7 +348,7 @@ define-command -hidden kaktree--click-action %{ evaluate-commands -save-regs 'a'
     } catch %{
         set-register a %opt{kaktree_file_icon}
         execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
-        kaktree--file-open %opt{kaktreeclient}
+        kaktree--file-open %opt{kaktree__jumpclient}
     } catch %{
         nop
     }
@@ -366,7 +367,7 @@ define-command -hidden kaktree--tab-action %{ evaluate-commands -save-regs 'a' %
         kaktree--tab-open-file
         set-register a %opt{kaktree_file_icon}
         execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
-        kaktree--file-open %opt{kaktreeclient}
+        kaktree--file-open %opt{kaktree__jumpclient}
     } catch %{
         nop
     }
@@ -555,12 +556,12 @@ define-command -hidden kaktree--change-root -params ..1 %{ evaluate-commands -sa
     }
 }}
 
-hook global ClientClose .* %{ evaluate-commands -client %opt{kaktreeclient} %sh{
+hook global ClientClose .* %{ try %{ evaluate-commands -client %opt{kaktreeclient} %sh{
     eval "set -- ${kak_quoted_client_list}"
     if [ $# -eq 1 ] && [ "$1" = "${kak_opt_kaktreeclient}" ]; then
         printf "%s\n" "kaktree-disable"
     fi
-}}
+}}}
 
 §
 
