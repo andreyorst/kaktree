@@ -1,3 +1,5 @@
+# THIS PLUGIN IS NOT ACTIVELY MAINTAINED. FOR MORE DETAILS PLEASE SEE [THIS DISCOURSE POST](https://discuss.kakoune.com/t/maintainance-warning-and-request)
+
 # kaktree
 
 ![kaktree](https://user-images.githubusercontent.com/19470159/59667890-2d397780-91c0-11e9-9214-e32b04539e7a.png)
