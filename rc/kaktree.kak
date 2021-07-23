@@ -235,10 +235,12 @@ define-command -hidden kaktree--refresh %{ evaluate-commands %sh{
                        map buffer normal 'c'       ': kaktree--file-action cp<ret>'
                        map buffer normal 'm'       ': kaktree--file-action mv<ret>'
                        map buffer normal 'l'       ': kaktree--file-action %{ln -s}<ret>'
+                       map buffer normal 'N'       ': kaktree--file-new<ret>'
+                       map buffer normal 'M'       ': kaktree--mkdir<ret>'
                        map buffer normal '?'       ': kaktree-help<ret>'
                        map buffer normal 'i'       ': nop<ret>'
                        map buffer normal 'I'       ': nop<ret>'
-                       map buffer normal 'o'       ': nop<ret>'
+                       map buffer normal 'o'       ': kaktree--o-action<ret>'
                        map buffer normal 'O'       ': nop<ret>'
                        map buffer normal 'a'       ': nop<ret>'
                        map buffer normal 'A'       ': nop<ret>'
@@ -272,6 +274,8 @@ y: yank entry path
 c: copy entry
 m: move entry
 l: link entry
+N: new entry
+M: new directory
 
 [Help]
 ?: display this help box"
@@ -495,12 +499,30 @@ define-command -hidden kaktree--file-action -params 1 %{  evaluate-commands -sav
     kaktree--shell-prompt "%arg{1} %val{main_reg_k} %val{main_reg_k}"
 }}
 
+define-command -hidden kaktree--file-new %{ evaluate-commands -save-regs 'k' %{
+    kaktree--get-current-path
+    kaktree--shell-prompt "touch %val{main_reg_k}"
+}}
+
+define-command -hidden kaktree--mkdir %{ evaluate-commands -save-regs 'k' %{
+    kaktree--get-current-path
+    kaktree--shell-prompt "mkdir -p %val{main_reg_k}"
+}}
+
 define-command -hidden kaktree--file-open -params 1 %{
     evaluate-commands -client %arg{1} -save-regs 'k"' %{
         kaktree--get-current-path
         focus
         edit -existing "%val{main_reg_k}"
     }
+}
+
+define-command -hidden kaktree--file-open-nofocus -params 1 %{
+    evaluate-commands -client %arg{1} -save-regs 'k"' %{
+        kaktree--get-current-path
+        edit -existing "%val{main_reg_k}"
+    }
+
 }
 
 define-command -hidden kaktree--label-clients %{ evaluate-commands %sh{
