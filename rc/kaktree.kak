@@ -315,6 +315,24 @@ define-command -hidden kaktree--alt-ret-action %{ evaluate-commands -save-regs '
     }
 }}
 
+define-command -hidden kaktree--o-action %{ evaluate-commands -save-regs 'a' %{
+    try %{
+        set-register a %opt{kaktree_dir_icon_close}
+        execute-keys -draft '<a-x>s^\h*\Q<c-r>a\E<ret>'
+        kaktree--dir-unfold
+    } catch %{
+        set-register a %opt{kaktree_dir_icon_open}
+        execute-keys -draft '<a-x>s^\h*\Q<c-r>a\E<ret>'
+        kaktree--dir-fold
+    } catch %{
+        set-register a %opt{kaktree_file_icon}
+        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        kaktree--file-open-nofocus %opt{kaktree__jumpclient}
+    } catch %{
+        nop
+    }
+}}
+
 define-command -hidden kaktree--mouse-action %{ evaluate-commands -save-regs 'c' %{
     execute-keys -draft 'x"cy'
     evaluate-commands %sh{
@@ -508,6 +526,14 @@ define-command -hidden kaktree--file-open -params 1 %{
         focus
         edit -existing "%val{main_reg_k}"
     }
+}
+
+define-command -hidden kaktree--file-open-nofocus -params 1 %{
+    evaluate-commands -client %arg{1} -save-regs 'k"' %{
+        kaktree--get-current-path
+        edit -existing "%val{main_reg_k}"
+    }
+
 }
 
 define-command -hidden kaktree--label-clients %{ evaluate-commands %sh{
