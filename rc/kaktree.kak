@@ -232,10 +232,9 @@ define-command -hidden kaktree--refresh %{ evaluate-commands %sh{
                        map buffer normal 'r'       ': kaktree--refresh<ret>'
                        map buffer normal 'd'       ': kaktree--file-delete<ret>'
                        map buffer normal 'y'       ': kaktree--file-yank<ret>'
-                       map buffer normal 'c'       ': kaktree--file-paste cp<ret>'
-                       map buffer normal 'm'       ': kaktree--file-paste mv<ret>'
-                       map buffer normal 'l'       ': kaktree--file-paste %{ln -s}<ret>'
-                       map buffer normal 'R'       ': kaktree--file-rename<ret>'
+                       map buffer normal 'c'       ': kaktree--file-action cp<ret>'
+                       map buffer normal 'm'       ': kaktree--file-action mv<ret>'
+                       map buffer normal 'l'       ': kaktree--file-action %{ln -s}<ret>'
                        map buffer normal '?'       ': kaktree-help<ret>'
                        map buffer normal 'i'       ': nop<ret>'
                        map buffer normal 'I'       ': nop<ret>'
@@ -273,7 +272,6 @@ y: yank entry path
 c: copy entry
 m: move entry
 l: link entry
-R: rename entry
 
 [Help]
 ?: display this help box"
@@ -492,14 +490,9 @@ define-command -hidden kaktree--file-yank %{
 }
 
 # parameter is command to run, i.e. mv, cp or ln -s
-define-command -hidden kaktree--file-paste -params 1 %{  evaluate-commands -save-regs 'd' %{
-    kaktree--get-current-path d
-    kaktree--shell-prompt "%arg{1} %val{main_reg_k} %val{main_reg_d}"
-}}
-
-define-command -hidden kaktree--file-rename %{ evaluate-commands -save-regs 'k' %{
-    kaktree--get-current-path
-    kaktree--shell-prompt "mv %val{main_reg_k} %val{main_reg_k}"
+define-command -hidden kaktree--file-action -params 1 %{  evaluate-commands -save-regs 'k' %{
+    kaktree--get-current-path k
+    kaktree--shell-prompt "%arg{1} %val{main_reg_k} %val{main_reg_k}"
 }}
 
 define-command -hidden kaktree--file-open -params 1 %{
@@ -598,3 +591,4 @@ hook -group kaktree-powerline global WinSetOption filetype=kaktree %{
 §
 
 # kak: indentwidth=4:tabstop=4
+
