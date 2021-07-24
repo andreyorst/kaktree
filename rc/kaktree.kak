@@ -239,7 +239,7 @@ define-command -hidden kaktree--refresh %{ evaluate-commands %sh{
                        map buffer normal '?'       ': kaktree-help<ret>'
                        map buffer normal 'i'       ': nop<ret>'
                        map buffer normal 'I'       ': nop<ret>'
-                       map buffer normal 'o'       ': nop<ret>'
+                       map buffer normal 'o'       ': kaktree--o-action<ret>'
                        map buffer normal 'O'       ': nop<ret>'
                        map buffer normal 'a'       ': nop<ret>'
                        map buffer normal 'A'       ': nop<ret>'
