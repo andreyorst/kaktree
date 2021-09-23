@@ -66,6 +66,9 @@ bool kaktree_show_help true
 declare-option -docstring "Should kaktree open file when <tab> key is pressed" \
 bool kaktree_tab_open_file false
 
+declare-option -docstring "Should kaktree keep focus after a file is opened" \
+bool kaktree_keep_focus false
+
 define-command -hidden kaktree--tab-open-file %{ evaluate-commands %sh{
     [ "$kak_opt_kaktree_tab_open_file" = "true" ] && echo nop || echo false
 }}
@@ -507,6 +510,9 @@ define-command -hidden kaktree--file-open -params 1 %{
         kaktree--get-current-path
         focus
         edit -existing "%val{main_reg_k}"
+    }
+    evaluate-commands %sh{
+        [ "$kak_opt_kaktree_keep_focus" = true ] && echo kaktree-focus
     }
 }
 
