@@ -3,7 +3,7 @@
 ![kaktree](https://user-images.githubusercontent.com/19470159/59667890-2d397780-91c0-11e9-9214-e32b04539e7a.png)
 
 This plugin displays the interactive file tree. It requires Perl, as well as
-`ls` command that supports at least `-1`, `-F`, `-B`, `-L`, and `-A`
+`ls` command that supports at least `-1`, `-F`, `-b`, `-L`, and `-A`
 flags. Works best with Tmux.
 
 ## Installation
