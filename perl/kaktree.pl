@@ -35,7 +35,6 @@ sub build_tree {
     my $real_path = abs_path(escape_path($path));
 
     $real_path =~ s/\s+$//;
-    $real_path = escape_path($real_path);
 
     chomp(my @input = `ls -1LFb 2>&- $hidden_arg $real_path`);
 
