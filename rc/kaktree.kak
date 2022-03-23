@@ -235,6 +235,7 @@ define-command -hidden kaktree--refresh %{ evaluate-commands %sh{
                        map buffer normal 'r'       ': kaktree--refresh<ret>'
                        map buffer normal 'd'       ': kaktree--file-delete<ret>'
                        map buffer normal 'y'       ': kaktree--file-yank<ret>'
+                       map buffer normal 'Y'       ': kaktree--file-yank-basename<ret>'
                        map buffer normal 'c'       ': kaktree--file-paste cp<ret>'
                        map buffer normal 'm'       ': kaktree--file-paste mv<ret>'
                        map buffer normal 'l'       ': kaktree--file-paste %{ln -s}<ret>'
@@ -512,6 +513,16 @@ define-command -hidden kaktree--file-delete %{ evaluate-commands -save-regs 'k' 
 
 define-command -hidden kaktree--file-yank %{
     kaktree--get-current-path
+    evaluate-commands -client %opt{kaktree__jumpclient} %{
+        echo -markup "{Information}Yanked %val{main_reg_k} to register k"
+    }
+}
+
+define-command -hidden kaktree--file-yank-basename %{
+    execute-keys -draft 'ghwwwGl"ky' -save-regs 'k'
+    evaluate-commands %sh{
+        printf '%s\n' "set-register k %val{main_reg_k}"
+    }
     evaluate-commands -client %opt{kaktree__jumpclient} %{
         echo -markup "{Information}Yanked %val{main_reg_k} to register k"
     }
