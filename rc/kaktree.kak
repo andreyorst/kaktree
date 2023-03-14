@@ -290,15 +290,15 @@ M: new directory
 define-command -hidden kaktree--ret-action %{ evaluate-commands -save-regs 'a' %{
     try %{
         set-register a %opt{kaktree_dir_icon_close}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a<ret>'
         kaktree--change-root
     } catch %{
         set-register a %opt{kaktree_dir_icon_open}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a<ret>'
         kaktree--change-root
     } catch %{
         set-register a %opt{kaktree_file_icon}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a<ret>'
         kaktree--file-open %opt{kaktree__jumpclient}
     } catch %{
         nop
@@ -308,15 +308,15 @@ define-command -hidden kaktree--ret-action %{ evaluate-commands -save-regs 'a' %
 define-command -hidden kaktree--alt-ret-action %{ evaluate-commands -save-regs 'a' %{
     try %{
         set-register a %opt{kaktree_dir_icon_close}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a<ret>'
         kaktree--change-root
     } catch %{
         set-register a %opt{kaktree_dir_icon_open}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a<ret>'
         kaktree--change-root
     } catch %{
         set-register a %opt{kaktree_file_icon}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a<ret>'
         kaktree--file-open-in-client
     } catch %{
         nop
@@ -326,15 +326,15 @@ define-command -hidden kaktree--alt-ret-action %{ evaluate-commands -save-regs '
 define-command -hidden kaktree--o-action %{ evaluate-commands -save-regs 'a' %{
     try %{
         set-register a %opt{kaktree_dir_icon_close}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a\E<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a\E<ret>'
         kaktree--dir-unfold
     } catch %{
         set-register a %opt{kaktree_dir_icon_open}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a\E<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a\E<ret>'
         kaktree--dir-fold
     } catch %{
         set-register a %opt{kaktree_file_icon}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a<ret>'
         kaktree--file-open-nofocus %opt{kaktree__jumpclient}
     } catch %{
         nop
@@ -365,15 +365,15 @@ define-command -hidden kaktree--set-temporarely -params 1 %{ evaluate-commands %
 define-command -hidden kaktree--click-action %{ evaluate-commands -save-regs 'a' %{
     try %{
         set-register a %opt{kaktree_dir_icon_close}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a<ret>'
         kaktree--dir-unfold
     } catch %{
         set-register a %opt{kaktree_dir_icon_open}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a<ret>'
         kaktree--dir-fold
     } catch %{
         set-register a %opt{kaktree_file_icon}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a<ret>'
         kaktree--file-open %opt{kaktree__jumpclient}
     } catch %{
         nop
@@ -383,16 +383,16 @@ define-command -hidden kaktree--click-action %{ evaluate-commands -save-regs 'a'
 define-command -hidden kaktree--tab-action %{ evaluate-commands -save-regs 'a' %{
     try %{
         set-register a %opt{kaktree_dir_icon_close}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a\E<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a\E<ret>'
         kaktree--dir-unfold
     } catch %{
         set-register a %opt{kaktree_dir_icon_open}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a\E<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a\E<ret>'
         kaktree--dir-fold
     } catch %{
         kaktree--tab-open-file
         set-register a %opt{kaktree_file_icon}
-        execute-keys -draft '<a-x>s^\h*\Q<c-r>a<ret>'
+        execute-keys -draft 'xs^\h*\Q<c-r>a<ret>'
         kaktree--file-open %opt{kaktree__jumpclient}
     } catch %{
         nop
@@ -423,7 +423,7 @@ define-command -hidden kaktree--dir-unfold %{ evaluate-commands -save-regs 'abck
 
         printf "%s\n" "set-register '\"' %{$tree
 }"
-        printf "%s\n" "execute-keys '<a-x>R'"
+        printf "%s\n" "execute-keys 'xR'"
         printf "%s\n" "select $kak_selection_desc"
     }
 }}
@@ -469,14 +469,14 @@ define-command -hidden kaktree--get-current-path -params ..1 %{ evaluate-command
 
     # store current amount of indentation to the register 'b'
     try %{
-        execute-keys -draft '<a-x>s^\h+<ret>"by'
+        execute-keys -draft 'xs^\h+<ret>"by'
         set-option global kaktree__current_indent %reg{b}
     } catch %{
         set-option global kaktree__current_indent ''
     }
 
     # store entire tree into register 'c' to build up path to current file
-    execute-keys -draft '<a-x><a-h>Gk"cy'
+    execute-keys -draft 'x<a-h>Gk"cy'
 
     evaluate-commands %sh{
         # Portable command to get a canonicalized path
@@ -646,4 +646,3 @@ hook -group kaktree-powerline global WinSetOption filetype=kaktree %{
 §
 
 # kak: indentwidth=4:tabstop=4
-
