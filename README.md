@@ -1,3 +1,7 @@
+# Project status
+
+Because I have stopped using Kakoune, this project will not receive active maintenance. The issues section has been closed, as I do not plan to address any issues myself. However, I welcome pull requests from anyone who encounters problems with this plugin and knows how to resolve them.
+
 # kaktree
 
 ![kaktree](https://user-images.githubusercontent.com/19470159/59667890-2d397780-91c0-11e9-9214-e32b04539e7a.png)
